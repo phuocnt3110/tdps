@@ -614,18 +614,25 @@ float benchMA50 = request.security(benchmarkSymbol, timeframe.period, ta.sma(clo
 bool marketBullish = benchClose > benchMA50
 
 // ═══════════════════════════════════════════════════════════════════
-// PULLBACK BUY DETECTION (Minervini: "First normal pullback after breakout")
+// PULLBACK BUY DETECTION v2 (Expanded: deeper pullback + wider window)
 // ═══════════════════════════════════════════════════════════════════
-// After a valid breakout, if price pulls back to pivot/EMA support with
-// volume dry-up, then bounces → high-probability re-entry with tighter stop.
+// v1: bsince 2-10, EMA10 support, pivot+3%, stop 5%
+// v2: bsince 2-20, EMA21 support, pivot+5%, stop 7% (VN market needs more room)
+// Diagnostic showed 45% SL hits in T+1~5, 62% were shakeouts → need wider net
 
 // Track pullback state
 int barsSinceBreakout = atlBreakoutTriggered ? bar_index - atlBreakoutBar : 999
-bool recentBreakout = atlBreakoutTriggered and barsSinceBreakout >= 2 and barsSinceBreakout <= 10
+bool recentBreakout = atlBreakoutTriggered and barsSinceBreakout >= 2 and barsSinceBreakout <= 20  // v2: expanded from 10→20
 
-// Pullback conditions
-float pullbackSupport = math.max(ema10, atlBreakoutPivot * 0.97)  // EMA10 or pivot -3%
-bool pricePulledBack  = close <= atlBreakoutPivot * 1.03           // Back near pivot (+3%)
+// Pullback depth classification
+bool isShallowPB = barsSinceBreakout <= 10  // Original window
+bool isDeepPB    = barsSinceBreakout > 10 and barsSinceBreakout <= 20  // Extended window
+
+// Pullback conditions (v2: deeper support levels)
+float pullbackSupportShallow = math.max(ema10, atlBreakoutPivot * 0.97)   // Shallow: EMA10 or pivot -3%
+float pullbackSupportDeep    = math.max(ema21, atlBreakoutPivot * 0.93)   // Deep: EMA21 or pivot -7%
+float pullbackSupport = isDeepPB ? pullbackSupportDeep : pullbackSupportShallow
+bool pricePulledBack  = close <= atlBreakoutPivot * 1.05           // v2: Back near pivot (+5%, was +3%)
 bool priceAboveSupport = close >= pullbackSupport                   // Holding support
 bool pullbackVolDry   = volume < volMA50 * 0.7                     // Volume dried up
 bool isBouncing       = close > open and close > close[1]          // Green candle, higher close
@@ -634,11 +641,14 @@ bool pullbackVolDry1  = volume[1] < volMA50 * 0.7                  // Previous b
 // Pullback Buy Signal
 bool isPullbackBuy = recentBreakout and pricePulledBack and priceAboveSupport and pullbackVolDry1 and isBouncing and marketBullish
 
-// Pullback stop (tighter than breakout stop)
-float pullbackSwingLow = ta.lowest(low, 5)
-float pullbackStop     = math.max(pullbackSwingLow * 0.99, atlBreakoutPivot * 0.97)
+// Pullback stop (v2: wider stop for deeper pullbacks)
+float pullbackSwingLow = ta.lowest(low, isDeepPB ? 8 : 5)  // v2: wider lookback for deep PB
+float pullbackStop     = math.max(pullbackSwingLow * 0.99, atlBreakoutPivot * 0.95)  // v2: pivot-5% (was -3%)
 float pullbackStopPct  = close > 0 ? (close - pullbackStop) / close * 100 : 99
-bool  pullbackStopOK   = pullbackStopPct <= 5  // Tighter stop: max 5%
+bool  pullbackStopOK   = pullbackStopPct <= 7  // v2: max 7% stop (was 5%), Minervini ceiling
+
+// Pullback grade: shallow=A, deep=A-
+string pullbackGrade = isShallowPB ? "A" : "A-"
 
 // Real-time pullback signal
 bool isPullbackBuy_RT = recentBreakout and pricePulledBack and priceAboveSupport and (pullbackVolDry or pullbackVolDry1) and isBouncing and marketBullish
@@ -653,6 +663,53 @@ float lowCheatStopPct = close > 0 ? (close - lowCheatStop) / close * 100 : 99
 bool  lowCheatStopOK  = lowCheatStopPct <= 4  // Max 4% stop
 bool  lowCheatEntry   = isLowCheat and lowCheatStopOK and marketBullish and not atlBreakoutTriggered
 bool  lowCheatEntry_RT = lowCheatEntry  // Same for RT (no breakout dependency)
+
+// ═══════════════════════════════════════════════════════════════════
+// RE-ENTRY AFTER STOP-OUT v2 (Catch shakeout recovery)
+// ═══════════════════════════════════════════════════════════════════
+// Diagnostic: 62% of SL hits were shakeouts (price recovered > |SL%|)
+// 55% of stopped-out trades had NO re-entry signal → missed recovery
+// This section tracks stop-outs and generates re-entry when structure intact
+
+// Track breakout reset (proxy for stop-out)
+// When atlBreakoutTriggered goes from true→false, it means price dropped below pivot*0.97
+var bool wasStoppedOut = false
+var int stoppedOutBar = 0
+var float stoppedOutPivot = 0.0
+
+// Detect stop-out: breakout was active last bar, now reset
+bool breakoutJustReset = not atlBreakoutTriggered and atlBreakoutTriggered[1]
+if breakoutJustReset
+    wasStoppedOut := true
+    stoppedOutBar := bar_index
+    stoppedOutPivot := nz(atlBreakoutPivot[1], priorPivot)
+
+// Re-entry conditions (Minervini: "If the stock sets up again, buy it again")
+int barsSinceStop = wasStoppedOut ? bar_index - stoppedOutBar : 999
+bool recentStopOut = wasStoppedOut and barsSinceStop >= 3 and barsSinceStop <= 30
+
+// Structure must be intact for re-entry
+bool reentryStructureOK = close > ma50 and not wStage4         // Above MA50, not declining
+bool reentryRsOK = not na(rsNorm) and rsNorm >= 70             // RS still decent
+bool reentryBounce = close > open and close > close[1]         // Green bounce candle
+bool reentryVolOK = volume > volMa * 0.8                       // At least near-average volume
+
+// Re-entry signal
+bool isReentrySetup = recentStopOut and reentryStructureOK and reentryRsOK and reentryBounce and reentryVolOK and marketBullish
+
+// Re-entry stop (from recent swing low, max 8% — Minervini ceiling)
+float reentrySwingLow = ta.lowest(low, 5)
+float reentryStop = reentrySwingLow * 0.98
+float reentryStopPct = close > 0 ? (close - reentryStop) / close * 100 : 99
+bool reentryStopOK = reentryStopPct <= 8 and reentryStopPct >= 3  // 3-8% range (stop distance filter)
+
+bool isReentryBuy = isReentrySetup and reentryStopOK
+bool isReentryBuy_RT = isReentryBuy  // Same for RT
+
+// Reset stop-out state after re-entry or timeout
+if isReentryBuy or barsSinceStop > 40
+    wasStoppedOut := false
+    stoppedOutBar := 0
 
 // ═══════════════════════════════════════════════════════════════════
 // TREND REVERSAL / DECLINE SIGNALS (Minervini Exit Philosophy)
@@ -914,18 +971,23 @@ bool entryPullback = isPullbackBuy and pullbackStopOK and (tier12Qualified or rs
 bool entryLowCheat_RT = lowCheatEntry_RT and (tier12Qualified or rsBasedQualified)
 bool entryLowCheat = lowCheatEntry and (tier12Qualified or rsBasedQualified)
 
+// Re-entry entry (v2: after stop-out, structure intact)
+bool entryReentry_RT = isReentryBuy_RT
+bool entryReentry = isReentryBuy
+
 // Entry Grade based on Minervini criteria ONLY
 // A+ = Fresh breakout with volume
 // A  = Pullback buy (tighter stop, higher win rate)
 // A  = Active breakout zone (already broke out)
 // A- = Low-cheat pivot (pre-breakout, best R:R)
 // A- = Near entry, waiting for trigger
+// B  = Re-entry after stop-out (v2)
 // B  = Setup OK but waiting
 // C  = Stop too wide or market weak
 // F  = Not tradeable per Minervini
 // Use _RT for live display in panel (shows signal during the day)
-string entryGrade = entryReady_RT ? "A+" : entryPullback_RT ? "A" : entryActive ? "A" : entryLowCheat_RT ? "A-" : entryWatch ? "A-" : (minerviniStopOK and marketBullish) ? "B" : minerviniStopOK ? "C" : "F"
-string entryStatus = entryReady_RT ? "BUY!" : entryPullback_RT ? "PULLBACK BUY!" : entryActive ? "ADD/HOLD" : entryLowCheat_RT ? "LOW-CHEAT!" : entryWatch ? "READY" : minerviniStopOK ? "WATCH" : "WAIT"
+string entryGrade = entryReady_RT ? "A+" : entryPullback_RT ? pullbackGrade : entryActive ? "A" : entryLowCheat_RT ? "A-" : entryReentry_RT ? "B+" : entryWatch ? "A-" : (minerviniStopOK and marketBullish) ? "B" : minerviniStopOK ? "C" : "F"
+string entryStatus = entryReady_RT ? "BUY!" : entryPullback_RT ? "PULLBACK BUY!" : entryActive ? "ADD/HOLD" : entryLowCheat_RT ? "LOW-CHEAT!" : entryReentry_RT ? "RE-ENTRY!" : entryWatch ? "READY" : minerviniStopOK ? "WATCH" : "WAIT"
 
 // Reference: Other stop methods count (for comparison only)
 string refStopInfo = str.tostring(stopMethodsOK) + "/4 methods ≤8%"
@@ -951,16 +1013,18 @@ bool isPullbackBuyNow_RT = entryPullback_RT and rsStrong       // Pullback buy r
 bool isPullbackBuyNow = entryPullback and rsStrong             // Pullback buy confirmed
 bool isLowCheatNow_RT = entryLowCheat_RT and rsStrong          // Low-cheat real-time
 bool isLowCheatNow = entryLowCheat and rsStrong                // Low-cheat confirmed
+bool isReentryNow_RT = entryReentry_RT                         // v2: Re-entry (RS >= 70 already in setup)
+bool isReentryNow = entryReentry                               // v2: Re-entry confirmed
 bool isAddHold = isQualified and entryActive and rsStrong      // RS >= 80 required for ADD
 bool isReadyToBuy = isQualified and entryWatch
 bool isSuperStockWatch = superStockCandidate and not isQualified and not isBuyNow and not isAddHold  // Potential super stock forming
 bool isWatchlist = (tier12Watch or isSuperStockWatch) and not isQualified and not isAddHold
 bool isSkip = not tier12Watch and not superStockCandidate
 
-// Any buy signal (breakout, pullback, or low-cheat)
-bool anyBuyNow_RT = isBuyNow_RT or isPullbackBuyNow_RT or isLowCheatNow_RT
-bool anyBuyNow = isBuyNow or isPullbackBuyNow or isLowCheatNow
-string buyType = isBuyNow_RT ? "Breakout" : isPullbackBuyNow_RT ? "Pullback" : isLowCheatNow_RT ? "Low-Cheat" : "None"
+// Any buy signal (breakout, pullback, low-cheat, or re-entry)
+bool anyBuyNow_RT = isBuyNow_RT or isPullbackBuyNow_RT or isLowCheatNow_RT or isReentryNow_RT
+bool anyBuyNow = isBuyNow or isPullbackBuyNow or isLowCheatNow or isReentryNow
+string buyType = isBuyNow_RT ? "Breakout" : isPullbackBuyNow_RT ? "Pullback" : isLowCheatNow_RT ? "Low-Cheat" : isReentryNow_RT ? "Re-entry" : "None"
 
 // ATL Signal Memory - track last BUY for panel display
 var int lastATLBuyBar = 0
@@ -995,6 +1059,7 @@ if isAboveTheLine
     barCol := isSuperStockWatch ? color.new(color.fuchsia, 0) : barCol
     barCol := isReadyToBuy ? color.new(color.yellow, 0) : barCol
     barCol := isLowCheatNow ? color.new(color.blue, 0) : barCol          // Low-cheat = blue
+    barCol := isReentryNow ? color.new(color.olive, 0) : barCol          // v2: Re-entry = olive
     barCol := isAddHold ? color.new(color.aqua, 0) : barCol
     barCol := isPullbackBuyNow ? color.new(color.teal, 0) : barCol       // Pullback = teal
     barCol := isBuyNow and rsBasedQualified ? color.new(color.fuchsia, 0) : barCol
@@ -1050,11 +1115,11 @@ if barstate.islast
         string qualifyMethod = rsBasedQualified and not tier12Qualified ? " [RS]" : ""
         // Use _RT for real-time panel display (shows signal during the day)
         // Unified verdict labels (consistent with BTL)
-        string verdict = isBuyNow_RT ? "★★★ ATL BUY ★★★" : isPullbackBuyNow_RT ? "★★★ ATL PULLBACK BUY ★★★" : isLowCheatNow_RT ? "★★★ ATL LOW-CHEAT ★★★" : isAddHold ? "★★ ATL HOLD ★★" : isReadyToBuy ? "★★ ATL READY ★★" : isQualified ? "○ ATL WATCH ○" : isSuperStockWatch ? "◆ ATL FORMING ◆" : isWatchlist ? "◆ ATL FORMING ◆" : "-- SKIP --"
+        string verdict = isBuyNow_RT ? "★★★ ATL BUY ★★★" : isPullbackBuyNow_RT ? "★★★ ATL PULLBACK BUY ★★★" : isLowCheatNow_RT ? "★★★ ATL LOW-CHEAT ★★★" : isReentryNow_RT ? "★★ ATL RE-ENTRY ★★" : isAddHold ? "★★ ATL HOLD ★★" : isReadyToBuy ? "★★ ATL READY ★★" : isQualified ? "○ ATL WATCH ○" : isSuperStockWatch ? "◆ ATL FORMING ◆" : isWatchlist ? "◆ ATL FORMING ◆" : "-- SKIP --"
         
         string trendIcon = isStage2 ? "🟢" : isStage2OK ? "🟡" : "🔴"
         string setupIcon = patternScore >= 85 ? "🟢" : patternScore >= 70 ? "🟢" : patternScore >= 50 ? "🟡" : patternScore >= 30 ? "🟠" : "🔴"
-        string entryIcon = entryReady_RT ? "🟢" : entryPullback_RT ? "🟢" : entryLowCheat_RT ? "🟢" : entryActive ? "🟢" : entryWatch ? "🟡" : isPivotReady ? "🟠" : "🔴"
+        string entryIcon = entryReady_RT ? "🟢" : entryPullback_RT ? "🟢" : entryLowCheat_RT ? "🟢" : entryReentry_RT ? "🟢" : entryActive ? "🟢" : entryWatch ? "🟡" : isPivotReady ? "🟠" : "🔴"
         string rsIcon = rsVeryStrong ? "🔥" : rsStrong ? "🟢" : "🟡"
         
         string entryConclusion = ""
@@ -1071,9 +1136,11 @@ if barstate.islast
         else if entryReady_RT
             entryConclusion := "🟢 BUY - Breakout [" + breakoutType + "] + Volume!"
         else if isPullbackBuyNow_RT
-            entryConclusion := "🟢 PULLBACK BUY - Post-BO pullback to support! Stop: " + str.tostring(pullbackStop, "#.#") + " (" + str.tostring(pullbackStopPct, "#.#") + "%)"
+            entryConclusion := "🟢 PULLBACK BUY (" + pullbackGrade + ") - " + (isDeepPB ? "Deep" : "Shallow") + " PB to " + (isDeepPB ? "EMA21" : "EMA10") + "! Stop: " + str.tostring(pullbackStop, "#.#") + " (" + str.tostring(pullbackStopPct, "#.#") + "%)"
         else if isLowCheatNow_RT
             entryConclusion := "🟢 LOW-CHEAT - Buy at contraction low! Stop: " + str.tostring(lowCheatStop, "#.#") + " (" + str.tostring(lowCheatStopPct, "#.#") + "%)"
+        else if isReentryNow_RT
+            entryConclusion := "🟢 RE-ENTRY - Post-SL recovery! Structure OK. Stop: " + str.tostring(reentryStop, "#.#") + " (" + str.tostring(reentryStopPct, "#.#") + "%)"
         else if entryActive and rsBasedQualified
             entryConclusion := "🟢 ADD/HOLD [RS] - Super stock in play"
         else if entryActive
@@ -1104,8 +1171,9 @@ if barstate.islast
              entryIcon + " ENTRY:  " + entryStatus + "  (" + entryGrade + ")\n" +
              "Pivot: " + str.tostring(entryLevel, "#.#") + "   |   Stop: " + str.tostring(stop4_Minervini, "#.#") + " (" + str.tostring(stop4_Pct, "#.#") + "%)   |   R:R: " + str.tostring(riskReward, "#.#") + ":1\n" +
              "TP: +" + str.tostring(tp1Pct, "#") + "%/+" + str.tostring(tp2Pct, "#") + "%   |   VolSurge: " + str.tostring(volSurgePct, "#") + "%   |   Market: " + (marketBullish ? "Bullish" : "Weak   ") + "\n" +
-             (isPullbackBuy_RT ? "┌─ PULLBACK BUY ──────\n│ Support: EMA10=" + str.tostring(ema10, "#.#") + "  Pivot=" + str.tostring(atlBreakoutPivot, "#.#") + "\n│ Stop: " + str.tostring(pullbackStop, "#.#") + " (" + str.tostring(pullbackStopPct, "#.#") + "%)  VolDry: " + (pullbackVolDry ? "Yes✓" : "No") + "\n└────────────────────────────\n" : "") +
+             (isPullbackBuy_RT ? "┌─ PULLBACK BUY v2 (" + (isDeepPB ? "Deep" : "Shallow") + ") ──────\n│ Support: " + (isDeepPB ? "EMA21=" + str.tostring(ema21, "#.#") : "EMA10=" + str.tostring(ema10, "#.#")) + "  Pivot=" + str.tostring(atlBreakoutPivot, "#.#") + "\n│ Stop: " + str.tostring(pullbackStop, "#.#") + " (" + str.tostring(pullbackStopPct, "#.#") + "%)  VolDry: " + (pullbackVolDry ? "Yes✓" : "No") + "  Bars: " + str.tostring(barsSinceBreakout) + "\n└────────────────────────────\n" : "") +
              (isLowCheat ? "┌─ LOW-CHEAT PIVOT ──────\n│ Contraction: " + str.tostring(lastContractionLow, "#.#") + " ~ " + str.tostring(lastContractionHigh, "#.#") + " (" + str.tostring(contractionRange, "#.#") + "%)\n│ Stop: " + str.tostring(lowCheatStop, "#.#") + " (" + str.tostring(lowCheatStopPct, "#.#") + "%)  T-Count: " + str.tostring(tCount) + "\n└────────────────────────────\n" : "") +
+             (isReentryBuy_RT ? "┌─ RE-ENTRY v2 ──────\n│ Stopped " + str.tostring(barsSinceStop) + " bars ago  |  RS: " + str.tostring(rsNorm, "#.#") + "\n│ Stop: " + str.tostring(reentryStop, "#.#") + " (" + str.tostring(reentryStopPct, "#.#") + "%)  |  >MA50: " + (close > ma50 ? "Yes✓" : "No") + "\n└────────────────────────────\n" : "") +
              "Add-on +2%: " + str.tostring(addon1Level, "#.#") + "   |   Add-on +5%: " + str.tostring(addon2Level, "#.#") + "\n" +
              entryConclusion + "\n" +
              "\n" +
@@ -1124,7 +1192,7 @@ if barstate.islast
                  "└────────────────────────────\n"
 
         // Use _RT for real-time panel background (shows during the day)
-        panelBgColor := isBuyNow_RT and rsBasedQualified ? color.new(color.fuchsia, 80) : isBuyNow_RT ? color.new(color.lime, 80) : isPullbackBuyNow_RT ? color.new(color.teal, 80) : isLowCheatNow_RT ? color.new(color.blue, 80) : isAddHold ? color.new(color.aqua, 80) : isReadyToBuy ? color.new(color.green, 80) : isQualified ? color.new(color.teal, 80) : isSuperStockWatch ? color.new(color.fuchsia, 85) : isWatchlist ? color.new(color.orange, 80) : color.new(color.gray, 80)
+        panelBgColor := isBuyNow_RT and rsBasedQualified ? color.new(color.fuchsia, 80) : isBuyNow_RT ? color.new(color.lime, 80) : isPullbackBuyNow_RT ? color.new(color.teal, 80) : isLowCheatNow_RT ? color.new(color.blue, 80) : isReentryNow_RT ? color.new(color.olive, 80) : isAddHold ? color.new(color.aqua, 80) : isReadyToBuy ? color.new(color.green, 80) : isQualified ? color.new(color.teal, 80) : isSuperStockWatch ? color.new(color.fuchsia, 85) : isWatchlist ? color.new(color.orange, 80) : color.new(color.gray, 80)
     
     else
         // ═══════════════════════════════════════════════════════════════════
@@ -1303,6 +1371,7 @@ alertcondition(hasVolSurge and isBreakout_RT, "Volume Breakout", "Breakout with 
 // Pullback Buy & Low-Cheat Pivot Alerts (Minervini Advanced Entries)
 alertcondition(isPullbackBuyNow_RT, "🟢 PULLBACK BUY", "Post-breakout pullback to support - tighter stop entry!")
 alertcondition(isLowCheatNow_RT, "🔵 LOW-CHEAT PIVOT", "Buy at contraction low - best R:R entry before breakout!")
+alertcondition(isReentryNow_RT, "🟤 RE-ENTRY", "Post-SL recovery - structure intact, bounce confirmed!")
 
 // Trend Reversal Alerts (If Holding)
 alertcondition(failedBreakout, "Failed Breakout", "Pivot rejected - price back below!")
