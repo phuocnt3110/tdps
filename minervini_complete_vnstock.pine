@@ -1128,8 +1128,8 @@ bool entryLowCheat = lowCheatEntry and (tier12Qualified or rsBasedQualified)
 bool entryReentry_RT = isReentryBuy_RT
 bool entryReentry = isReentryBuy
 
-// Zone gate: ATL signals only fire in true ATL zone (not in ETL where isAboveTheLine can also be true)
-bool isATLzone = not isETL
+// Zone gate: ATL signals only fire in true ATL zone (must be above the line AND not in ETL)
+bool isATLzone = isAboveTheLine and not isETL
 
 // ETL/BTL final signals (thresholds already embedded in raw signals)
 bool isEtlBuyNow_RT = etlBuySignal_RT
