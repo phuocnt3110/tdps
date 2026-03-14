@@ -1,0 +1,1028 @@
+==================================================================================================================================
+MULTI-STOCK BTL SIGNAL ANALYSIS & OPTIMIZATION
+Stocks: 12 | Chase filter: ≤3.0% above pivot
+==================================================================================================================================
+
+  Fetching EVF... 314 bars [2024-12-02 → 2026-03-11]
+
+  Fetching GSP... 314 bars [2024-12-02 → 2026-03-11]
+
+  Fetching PVC... 324 bars [2024-11-18 → 2026-03-11]
+
+  Fetching STB... 324 bars [2024-11-18 → 2026-03-11]
+
+  Fetching G36... 486 bars [2024-03-27 → 2026-03-11]
+
+  Fetching PLX... 338 bars [2024-10-29 → 2026-03-11]
+
+  Fetching DPM... 464 bars [2024-05-02 → 2026-03-11]
+
+  Fetching PHR... 469 bars [2024-04-22 → 2026-03-11]
+
+  Fetching DGW... 475 bars [2024-04-11 → 2026-03-11]
+
+  Fetching VHC... 323 bars [2024-11-19 → 2026-03-11]
+
+  Fetching HPG... 373 bars [2024-05-15 → 2025-11-06]
+
+  Fetching BFC... 314 bars [2024-12-02 → 2026-03-11]
+
+Total data points: 1201 across 12 stocks
+
+==================================================================================================================================
+PART 1: BTL BUY SIGNALS DETECTED (7 signals)
+==================================================================================================================================
+symbol       date close stage darvas_high darvas_width chase_pct stop_pct rr_ratio vol_ratio_20d rsi_weekly   T+2    T+7   T+14   T+30 T+2_dd
+   GSP 2026-01-15    11    S1          11        +9.7%     +0.9%    +9.6%      2.1           2.5       51.1 -1.8%  -2.2%  -1.3% +13.2%  -2.6%
+   GSP 2026-02-27    12    S3          11        +4.1%     +3.1%    +6.8%      2.9           6.3       85.5 +8.1%  +3.4%    n/a    n/a  +3.0%
+   PLX 2025-12-08    36  S1→2          35        +5.7%     +2.0%    +7.2%      2.8           2.4       39.3 -4.0%  -3.9%  -1.4% +63.9%  -4.3%
+   PLX 2025-12-29    36  S1→2          36        +9.0%     +0.6%    +8.8%      2.3           2.8       52.2 -3.3% +17.8% +61.6% +41.6%  -3.3%
+   DPM 2025-06-10    19  S1→2          19        +5.0%     +0.7%    +5.4%      3.7           2.7       46.1 +0.7% +11.0% +10.5% +20.6%  -1.0%
+   DPM 2025-06-13    20    S2          20        +7.7%     +0.3%    +7.5%      2.7           2.4       46.1 +7.7%  +7.0%  +8.1% +20.7%  +1.0%
+   PHR 2025-12-03    58    S2          58        +7.2%     +0.2%    +6.9%      2.9           3.4       53.2 +0.0%  -6.0%  -2.2% +13.8%  -0.5%
+  T+2: Win 3/7 (43%) | Avg +1.07% | Med +0.00% | Best +8.09% | Worst -4.02%
+  T+7: Win 4/7 (57%) | Avg +3.88% | Med +3.40% | Best +17.81% | Worst -6.03%
+  T+14: Win 3/6 (50%) | Avg +12.55% | Med +3.40% | Best +61.64% | Worst -2.24%
+  T+30: Win 6/6 (100%) | Avg +28.96% | Med +20.63% | Best +63.94% | Worst +13.16%
+
+==================================================================================================================================
+PART 2: CHASE FILTER ANALYSIS (max 3.0% above pivot)
+==================================================================================================================================
+
+  Signals ≤3.0% above pivot: 6
+    T+2: Win 2/6 (33%) | Avg -0.10%
+    T+7: Win 3/6 (50%) | Avg +3.96%
+    T+14: Win 3/6 (50%) | Avg +12.55%
+    T+30: Win 6/6 (100%) | Avg +28.96%
+
+  Signals >3.0% above pivot (CHASED): 1
+    T+2: Win 1/1 (100%) | Avg +8.09%
+    T+7: Win 1/1 (100%) | Avg +3.40%
+
+==================================================================================================================================
+PART 3: PER-STOCK CONDITION BREAKDOWN (% of analysis days TRUE)
+==================================================================================================================================
+
+  EVF (41 days):
+    is_btl              :  41/41 (100.0%)
+    not_s4              :  41/41 (100.0%)
+    darvas_valid        :  22/41 ( 53.7%)
+    darvas_bo           :   2/41 (  4.9%)
+    darvas_vol          :  17/41 ( 41.5%)
+    darvas_ok           :   1/41 (  2.4%)
+    rsi_ok              :  41/41 (100.0%)
+    ema_ok              :  17/41 ( 41.5%)
+    stop_ok             :  27/41 ( 65.9%)
+    rr_ok               :  27/41 ( 65.9%)
+    buy_signal          :   0/41 (  0.0%)
+
+  GSP (41 days):
+    is_btl              :  38/41 ( 92.7%)
+    not_s4              :  34/41 ( 82.9%)
+    darvas_valid        :  36/41 ( 87.8%)
+    darvas_bo           :   4/41 (  9.8%)
+    darvas_vol          :  13/41 ( 31.7%)
+    darvas_ok           :   2/41 (  4.9%)
+    rsi_ok              :  41/41 (100.0%)
+    ema_ok              :  38/41 ( 92.7%)
+    stop_ok             :  35/41 ( 85.4%)
+    rr_ok               :  35/41 ( 85.4%)
+    buy_signal          :   2/41 (  4.9%)
+
+  PVC (50 days):
+    is_btl              :  22/50 ( 44.0%)
+    not_s4              :  50/50 (100.0%)
+    darvas_valid        :   4/50 (  8.0%)
+    darvas_bo           :   5/50 ( 10.0%)
+    darvas_vol          :  20/50 ( 40.0%)
+    darvas_ok           :   1/50 (  2.0%)
+    rsi_ok              :   0/50 (  0.0%)
+    ema_ok              :  49/50 ( 98.0%)
+    stop_ok             :   8/50 ( 16.0%)
+    rr_ok               :   8/50 ( 16.0%)
+    buy_signal          :   0/50 (  0.0%)
+
+  STB (50 days):
+    is_btl              :  22/50 ( 44.0%)
+    not_s4              :  50/50 (100.0%)
+    darvas_valid        :   5/50 ( 10.0%)
+    darvas_bo           :   4/50 (  8.0%)
+    darvas_vol          :  12/50 ( 24.0%)
+    darvas_ok           :   1/50 (  2.0%)
+    rsi_ok              :   0/50 (  0.0%)
+    ema_ok              :  48/50 ( 96.0%)
+    stop_ok             :   9/50 ( 18.0%)
+    rr_ok               :   9/50 ( 18.0%)
+    buy_signal          :   0/50 (  0.0%)
+
+  G36 (213 days):
+    is_btl              :  88/213 ( 41.3%)
+    not_s4              : 205/213 ( 96.2%)
+    darvas_valid        :  18/213 (  8.5%)
+    darvas_bo           :  11/213 (  5.2%)
+    darvas_vol          :  44/213 ( 20.7%)
+    darvas_ok           :   1/213 (  0.5%)
+    rsi_ok              : 103/213 ( 48.4%)
+    ema_ok              : 155/213 ( 72.8%)
+    stop_ok             :  96/213 ( 45.1%)
+    rr_ok               :  96/213 ( 45.1%)
+    buy_signal          :   0/213 (  0.0%)
+
+  PLX (63 days):
+    is_btl              :  30/63 ( 47.6%)
+    not_s4              :  63/63 (100.0%)
+    darvas_valid        :  23/63 ( 36.5%)
+    darvas_bo           :   5/63 (  7.9%)
+    darvas_vol          :  17/63 ( 27.0%)
+    darvas_ok           :   3/63 (  4.8%)
+    rsi_ok              :  63/63 (100.0%)
+    ema_ok              :  60/63 ( 95.2%)
+    stop_ok             :  27/63 ( 42.9%)
+    rr_ok               :  27/63 ( 42.9%)
+    buy_signal          :   2/63 (  3.2%)
+
+  DPM (189 days):
+    is_btl              :  81/189 ( 42.9%)
+    not_s4              : 187/189 ( 98.9%)
+    darvas_valid        :  88/189 ( 46.6%)
+    darvas_bo           :  11/189 (  5.8%)
+    darvas_vol          :  36/189 ( 19.0%)
+    darvas_ok           :   8/189 (  4.2%)
+    rsi_ok              : 139/189 ( 73.5%)
+    ema_ok              : 119/189 ( 63.0%)
+    stop_ok             : 110/189 ( 58.2%)
+    rr_ok               : 110/189 ( 58.2%)
+    buy_signal          :   2/189 (  1.1%)
+
+  PHR (198 days):
+    is_btl              : 100/198 ( 50.5%)
+    not_s4              : 167/198 ( 84.3%)
+    darvas_valid        :  85/198 ( 42.9%)
+    darvas_bo           :   8/198 (  4.0%)
+    darvas_vol          :  37/198 ( 18.7%)
+    darvas_ok           :   2/198 (  1.0%)
+    rsi_ok              :  98/198 ( 49.5%)
+    ema_ok              : 131/198 ( 66.2%)
+    stop_ok             : 108/198 ( 54.5%)
+    rr_ok               : 108/198 ( 54.5%)
+    buy_signal          :   1/198 (  0.5%)
+
+  DGW (204 days):
+    is_btl              : 102/204 ( 50.0%)
+    not_s4              : 182/204 ( 89.2%)
+    darvas_valid        :  32/204 ( 15.7%)
+    darvas_bo           :  11/204 (  5.4%)
+    darvas_vol          :  36/204 ( 17.6%)
+    darvas_ok           :   4/204 (  2.0%)
+    rsi_ok              :  85/204 ( 41.7%)
+    ema_ok              : 116/204 ( 56.9%)
+    stop_ok             : 102/204 ( 50.0%)
+    rr_ok               : 102/204 ( 50.0%)
+    buy_signal          :   0/204 (  0.0%)
+
+  VHC (48 days):
+    is_btl              :   8/48 ( 16.7%)
+    not_s4              :  48/48 (100.0%)
+    darvas_valid        :  15/48 ( 31.2%)
+    darvas_bo           :   4/48 (  8.3%)
+    darvas_vol          :  11/48 ( 22.9%)
+    darvas_ok           :   1/48 (  2.1%)
+    rsi_ok              :  48/48 (100.0%)
+    ema_ok              :  35/48 ( 72.9%)
+    stop_ok             :  31/48 ( 64.6%)
+    rr_ok               :  31/48 ( 64.6%)
+    buy_signal          :   0/48 (  0.0%)
+
+  HPG (63 days):
+    is_btl              :  16/63 ( 25.4%)
+    not_s4              :  63/63 (100.0%)
+    darvas_valid        :  20/63 ( 31.7%)
+    darvas_bo           :   5/63 (  7.9%)
+    darvas_vol          :  11/63 ( 17.5%)
+    darvas_ok           :   2/63 (  3.2%)
+    rsi_ok              :   0/63 (  0.0%)
+    ema_ok              :  63/63 (100.0%)
+    stop_ok             :  25/63 ( 39.7%)
+    rr_ok               :  25/63 ( 39.7%)
+    buy_signal          :   0/63 (  0.0%)
+
+  BFC (41 days):
+    is_btl              :  12/41 ( 29.3%)
+    not_s4              :  40/41 ( 97.6%)
+    darvas_valid        :   8/41 ( 19.5%)
+    darvas_bo           :   5/41 ( 12.2%)
+    darvas_vol          :  11/41 ( 26.8%)
+    darvas_ok           :   3/41 (  7.3%)
+    rsi_ok              :   0/41 (  0.0%)
+    ema_ok              :  39/41 ( 95.1%)
+    stop_ok             :  10/41 ( 24.4%)
+    rr_ok               :  10/41 ( 24.4%)
+    buy_signal          :   0/41 (  0.0%)
+
+==================================================================================================================================
+PART 4: RELAXED/ALTERNATIVE SIGNAL SCENARIOS
+==================================================================================================================================
+
+  Near-miss signals (≥7/9 conditions met, 253 found):
+  Symbol         Date    Close  Stage Pass Fails                             T+2    T+7    T+14
+  ----------------------------------------------------------------------------------------------------
+     BFC   2026-01-07       44   S1→2    8 RSI not OS, EMA below           +3.4% +10.8%   +3.8%
+     BFC   2026-01-08       46     S1    8 No breakout, RSI not OS         +1.2%  +4.5%   +0.8%
+     BFC   2026-01-09       46     S1    8 No breakout, RSI not OS         +2.1%  +1.4%   +2.0%
+     BFC   2026-01-12       46     S1    8 No breakout, RSI not OS         +5.8%  +1.6%   +3.2%
+     BFC   2026-01-14       49     S2    7 RSI not OS, Stop>10%, R:R<2     +0.4%  -4.3%   +0.4%
+     DGW   2025-05-27       34     S4    7 Stage4, No breakout, EMA below  -0.6%  +3.7%  +20.0%
+     DGW   2025-06-03       34     S4    7 Stage4, No breakout, EMA below  +2.3% +18.0%  +25.9%
+     DGW   2025-06-06       34     S4    7 Stage4, No breakout, Vol low   +10.1% +21.7%  +36.5%
+     DGW   2025-06-10       37     S4    7 Stage4, Stop>10%, R:R<2         +8.6% +18.2%  +18.6%
+     DGW   2025-06-17       41  Trans    7 Box invalid, Stop>10%, R:R<2    +7.0% +12.2%   +7.4%
+     DGW   2025-06-19       44  Trans    7 Box invalid, Stop>10%, R:R<2    -1.9%  +0.3%   +0.8%
+     DGW   2025-07-15       44     S2    8 No breakout, Vol low            +1.1%  +6.8%   +1.6%
+     DGW   2025-07-16       44     S2    8 No breakout, Vol low            +5.4%  +5.1%   -1.1%
+     DGW   2025-07-17       44     S2    8 No breakout, Vol low            +3.4%  +4.5%   +4.9%
+     DGW   2025-07-18       47     S2    8 Stop>10%, R:R<2                 -0.3%  -7.2%   -0.3%
+     DGW   2025-07-21       46     S2    7 ATL(not BTL), No breakout, Vol low  +4.3%  -6.5%   -0.4%
+     DGW   2025-07-22       46     S2    7 ATL(not BTL), No breakout, Vol low  +1.2%  -8.4%   +1.8%
+     DGW   2025-07-28       46     S2    7 ATL(not BTL), Box invalid, No breakout  -7.5%  +0.4%   -2.4%
+     DGW   2025-07-29       43     S2    7 ATL(not BTL), Box invalid, No breakout  -1.6%  +7.4%   +3.1%
+     DGW   2025-08-08       46     S2    7 ATL(not BTL), Box invalid, No breakout  +5.1%  -1.9%   -8.1%
+     DPM   2025-06-06       19     S4    7 Stage4, No breakout, Vol low    +3.7% +14.1%  +13.1%
+     DPM   2025-06-09       19     S4    7 Stage4, No breakout, Vol low    +2.7% +13.3%  +11.9%
+     DPM   2025-06-11       19     S1    8 No breakout, Vol low            +2.6% +10.5%  +10.7%
+     DPM   2025-06-12       19     S1    9 No breakout                     +3.6%  +8.5%  +10.6%
+     DPM   2025-06-16       20     S2    9 No breakout                     +5.4%  +3.2%   +5.8%
+     DPM   2025-06-17       21     S2    7 No breakout, Stop>10%, R:R<2    +0.9%  -0.9%   +1.2%
+     DPM   2025-07-11       21     S2    7 ATL(not BTL), No breakout, Vol low  +2.4%  +8.7%  +10.3%
+     DPM   2025-07-14       22     S2    7 ATL(not BTL), No breakout, Vol low  +2.1% +11.5%  +10.5%
+     DPM   2025-07-15       22     S2    7 ATL(not BTL), No breakout, Vol low  +1.4%  +7.9%  +10.1%
+     DPM   2025-07-16       22     S2    7 ATL(not BTL), No breakout, Vol low  +0.1%  +7.8%   +7.8%
+     DPM   2025-07-17       22     S2    7 ATL(not BTL), No breakout, Vol low  +3.0%  +7.7%  +11.8%
+     DPM   2025-07-18       22     S2    7 ATL(not BTL), No breakout, Vol low  +5.3%  +3.3%  +20.3%
+     DPM   2025-07-21       23     S2    9 ATL(not BTL)                    +5.2%  +4.4%  +24.1%
+     DPM   2025-07-29       23     S2    7 ATL(not BTL), Box invalid, No breakout  +3.6% +16.5%  +25.9%
+     DPM   2025-08-06       25     S2    7 ATL(not BTL), Stop>10%, R:R<2  +14.4% +13.2%   +7.7%
+     DPM   2025-11-19       24     S2    7 ATL(not BTL), No breakout, EMA below  -3.5%  -5.5%   -7.2%
+     DPM   2025-12-01       23  Trans    7 No breakout, Vol low, EMA below  +0.9%  -1.9%   -2.6%
+     DPM   2025-12-02       23  Trans    7 No breakout, Vol low, EMA below  +2.4%  -1.7%   -2.0%
+     DPM   2025-12-05       23  Trans    7 No breakout, Vol low, EMA below  -2.2%  -3.7%   -4.5%
+     DPM   2025-12-08       23  Trans    7 No breakout, Vol low, EMA below  -2.2%  -3.9%   -4.5%
+     DPM   2025-12-10       23  Trans    7 No breakout, Vol low, EMA below  -2.9%  -0.7%   -1.1%
+     DPM   2025-12-11       23  Trans    7 No breakout, Vol low, EMA below  -2.9%  -0.2%   -1.5%
+     DPM   2025-12-18       22  Trans    7 No breakout, Vol low, EMA below  +1.3%  +2.0%   +6.7%
+     DPM   2025-12-19       22  Trans    7 No breakout, Vol low, EMA below  -1.3%  -0.4%   +8.0%
+     DPM   2025-12-22       23  Trans    7 No breakout, Vol low, EMA below  -0.9%  -1.3%   +8.2%
+     DPM   2025-12-23       22  Trans    7 No breakout, Vol low, EMA below  -0.2%  +1.4%  +12.2%
+     DPM   2025-12-24       22  Trans    7 No breakout, Vol low, EMA below  -1.1%  +2.2%   +8.7%
+     DPM   2025-12-25       22  Trans    7 No breakout, Vol low, EMA below  +2.5%  +5.9%   +8.8%
+     DPM   2025-12-26       22  Trans    7 No breakout, Vol low, EMA below  +1.4%  +6.3%   +9.5%
+     DPM   2025-12-29       23  Trans    8 No breakout, EMA below          -2.0%  +4.6%   +7.0%
+     DPM   2025-12-30       22  Trans    7 No breakout, Vol low, EMA below  +0.4%  +8.5%  +10.0%
+     DPM   2025-12-31       22  Trans    7 No breakout, Vol low, EMA below  +2.7%  +9.7%  +16.2%
+     DPM   2026-01-05       22  Trans    8 No breakout, EMA below          +4.2% +10.7%   +9.1%
+     DPM   2026-01-06       23  Trans    8 No breakout, EMA below          +2.8%  +6.3%   +0.7%
+     DPM   2026-01-07       23  Trans    9 EMA below                       +1.3%  +2.8%   -0.6%
+     DPM   2026-01-08       24  Trans    8 No breakout, EMA below          +3.4%  +3.0%   +0.4%
+     DPM   2026-01-09       24  Trans    8 No breakout, EMA below          +2.7%  +2.3%   +0.6%
+     DPM   2026-01-12       24   S1→2    8 Stop>10%, R:R<2                 +2.5%  +1.4%   -1.4%
+     DPM   2026-01-13       24     S2    7 No breakout, Stop>10%, R:R<2    -0.4%  +5.9%   +0.2%
+     DPM   2026-01-14       25     S2    8 Stop>10%, R:R<2                 -3.2%  -1.4%   -0.8%
+     DPM   2026-01-16       24  Trans    7 Box invalid, No breakout, Vol low  +0.8%  -3.3%   +3.7%
+     DPM   2026-01-22       26     S2    7 Box invalid, Stop>10%, R:R<2   -11.0%  -5.4%   -2.3%
+     DPM   2026-01-26       23  Trans    8 Box invalid, No breakout        +2.6%  +8.7%   +8.7%
+     DPM   2026-01-27       23     S1    7 Box invalid, No breakout, Vol low  +2.6%  +7.3%   +9.0%
+     DPM   2026-01-28       24     S1    7 Box invalid, No breakout, Vol low  +1.5%  +4.7%  +14.0%
+     DPM   2026-01-29       24     S1    7 Box invalid, No breakout, Vol low  +2.3%  +6.1%  +12.1%
+     DPM   2026-01-30       24     S1    7 Box invalid, No breakout, Vol low  +3.1%  +4.8%  +10.6%
+     DPM   2026-02-02       24     S1    7 Box invalid, No breakout, Vol low  +2.2%  +3.3%  +12.9%
+     DPM   2026-02-03       25     S1    7 Box invalid, No breakout, Vol low  +1.2%  +1.2%  +19.4%
+     DPM   2026-02-04       25     S2    7 Box invalid, No breakout, Vol low  -1.2%  +0.0%  +25.4%
+     DPM   2026-02-05       25     S2    7 Box invalid, No breakout, Vol low  +1.4%  +1.6%  +22.4%
+     DPM   2026-02-06       25     S1    7 Box invalid, No breakout, Vol low  +1.6%  +8.9%  +23.5%
+     DPM   2026-02-09       25     S2    7 Box invalid, No breakout, Vol low  -0.4%  +5.7%  +22.9%
+     DPM   2026-02-10       25     S2    7 Box invalid, No breakout, Vol low  -0.4%  +5.6%  +19.3%
+     DPM   2026-02-11       25     S2    7 Box invalid, No breakout, Vol low  -1.0%  +9.3%  +24.0%
+     DPM   2026-02-12       25     S2    7 Box invalid, No breakout, Vol low  +1.6% +18.0%  +27.2%
+     DPM   2026-02-13       25     S2    7 Box invalid, No breakout, Vol low  +7.6% +25.4%     n/a
+     DPM   2026-02-24       27     S2    7 Box invalid, Stop>10%, R:R<2    -1.5% +13.4%     n/a
+     DPM   2026-02-27       28     S2    7 Box invalid, Stop>10%, R:R<2   +13.6% +13.4%     n/a
+     EVF   2026-01-07       11  Trans    7 No breakout, Vol low, EMA below  -1.3%  +3.1%   +2.7%
+     EVF   2026-01-08       11  Trans    8 No breakout, EMA below          +3.1%  +3.6%   +3.6%
+     EVF   2026-01-09       11  Trans    7 No breakout, Vol low, EMA below  +5.9%  +4.5%   +5.4%
+     EVF   2026-01-12       12  Trans    8 No breakout, EMA below          +0.4%  -1.7%   +0.4%
+     EVF   2026-01-13       12  Trans    8 No breakout, EMA below          +0.0%  +3.0%   -0.9%
+     EVF   2026-01-14       12  Trans    7 No breakout, Vol low, EMA below  +0.0%  +1.7%   +2.6%
+     EVF   2026-01-15       12  Trans    8 No breakout, EMA below          -1.3%  -3.4%   +2.6%
+     EVF   2026-01-16       12  Trans    7 No breakout, Vol low, EMA below  +0.0%  -0.4%   +1.3%
+     EVF   2026-01-19       12  Trans    7 No breakout, Vol low, EMA below  -2.2%  +0.0%   -1.3%
+     EVF   2026-01-20       12  Trans    7 No breakout, Vol low, EMA below  +4.3%  +0.9%   -1.7%
+     EVF   2026-01-21       11  Trans    8 No breakout, EMA below          +4.0%  +2.2%   +0.0%
+     EVF   2026-01-23       12  Trans    8 No breakout, EMA below          -2.1%  +0.9%   -2.1%
+     EVF   2026-02-04       12  Trans    9 No breakout                     -5.0%  +0.8%  +15.4%
+     EVF   2026-02-05       12  Trans    8 No breakout, Vol low            -3.0% +10.3%  +13.7%
+     EVF   2026-02-06       11  Trans    8 No breakout, Vol low            -0.9% +15.4%  +17.5%
+     EVF   2026-02-09       11  Trans    7 No breakout, Vol low, EMA below  +2.2% +13.7%  +19.8%
+     EVF   2026-02-10       11  Trans    7 No breakout, Vol low, EMA below  +1.8% +22.1%  +11.9%
+     EVF   2026-02-11       12  Trans    7 No breakout, Vol low, EMA below  +4.3% +19.0%  +16.4%
+     EVF   2026-02-12       12  Trans    7 No breakout, Vol low, EMA below +12.2% +19.6%  +25.2%
+     EVF   2026-02-13       12     S1    9 No breakout                     +8.7% +14.5%     n/a
+     EVF   2026-02-23       13   S1→2    8 Stop>10%, R:R<2                 +0.0%  +3.1%     n/a
+     EVF   2026-02-26       14     S2    7 Box invalid, Stop>10%, R:R<2    -0.4%  -8.3%     n/a
+     G36   2025-05-15        6   S1→2    7 Box invalid, Stop>10%, R:R<2    +0.0%  -1.6%  +43.3%
+     G36   2025-05-20        7  Trans    7 Box invalid, Stop>10%, R:R<2    -2.9% +11.5%  +36.3%
+     G36   2025-05-28        7     S3    7 Box invalid, Stop>10%, R:R<2    +1.4% +28.1%  +29.3%
+     G36   2025-06-03        8     S2    7 Box invalid, Stop>10%, R:R<2    +8.9%  +8.9%   +2.2%
+     G36   2025-11-18        8  Trans    7 No breakout, Vol low, EMA below  -1.2%  -3.5%   +5.9%
+     G36   2025-11-19        8  Trans    7 No breakout, Vol low, EMA below  +0.0%  -2.4%   +6.0%
+     G36   2025-11-20        8  Trans    7 No breakout, Vol low, EMA below  +1.2%  -2.4%   +6.0%
+     G36   2025-11-21        8  Trans    7 No breakout, Vol low, EMA below  -2.4%  -2.4%   +3.6%
+     G36   2025-11-24        8  Trans    7 No breakout, Vol low, EMA below  -1.2%  -2.4%   +0.0%
+     G36   2025-11-25        8  Trans    7 No breakout, Vol low, EMA below  +0.0%  +2.4%   +1.2%
+     G36   2025-11-26        8  Trans    7 No breakout, Vol low, EMA below  -2.4%  +9.5%   +2.4%
+     G36   2025-11-27        8  Trans    7 No breakout, Vol low, EMA below  +0.0%  +9.8%   +4.9%
+     G36   2025-11-28        8  Trans    7 No breakout, Vol low, EMA below  +0.0%  +8.5%   +7.3%
+     G36   2025-12-01        8  Trans    7 No breakout, Vol low, EMA below  +1.2%  +8.5%   +8.5%
+     G36   2025-12-02        8  Trans    7 No breakout, Vol low, EMA below  +2.4%  +6.1%   +8.5%
+     G36   2025-12-03        8  Trans    8 No breakout, EMA below         +10.8%  +2.4%   +4.8%
+     G36   2025-12-04        8  Trans    7 No breakout, Vol low, EMA below  +7.1%  -1.2%   +9.5%
+     G36   2025-12-05        9   S1→2    7 EMA below, Stop>10%, R:R<2      -3.3%  -6.5%   +1.1%
+     G36   2025-12-11        9  Trans    7 Box invalid, No breakout, Vol low  -4.6%  +2.3%  +19.5%
+     G36   2025-12-12        8  Trans    7 Box invalid, No breakout, Vol low  +1.2%  +2.4%  +21.2%
+     G36   2025-12-17        9  Trans    7 Box invalid, No breakout, Vol low  +3.5%  +8.1%  +27.9%
+     G36   2025-12-18        9  Trans    7 Box invalid, No breakout, Vol low  +1.1% +10.2%  +29.5%
+     G36   2025-12-23        9  Trans    7 Box invalid, No breakout, Vol low  +6.9% +18.4%  +39.1%
+     G36   2026-01-06       11     S2    7 Box invalid, Stop>10%, R:R<2    -1.8%  +8.0%   +9.8%
+     G36   2026-01-14       12     S2    7 Box invalid, Stop>10%, R:R<2   +12.4%  +3.3%   +8.3%
+     G36   2026-02-25       12     S2    7 ATL(not BTL), No breakout, Vol low  +4.8%  -6.5%     n/a
+     G36   2026-02-26       13     S2    8 ATL(not BTL), No breakout       -6.1% -22.9%     n/a
+     G36   2026-02-27       13     S2    7 ATL(not BTL), No breakout, Vol low  -5.4% -19.2%     n/a
+     G36   2026-03-02       12     S2    8 ATL(not BTL), No breakout       -4.1% -12.2%     n/a
+     GSP   2026-01-06       11     S4    7 Stage4, No breakout, EMA below  +0.9%  +8.1%   +5.7%
+     GSP   2026-01-08       11     S4    7 Stage4, Vol low, EMA below      +0.9%  +5.2%   +5.6%
+     GSP   2026-01-09       11     S4    8 Stage4, No breakout             +1.4%  +4.2%   +3.3%
+     GSP   2026-01-12       11     S4    7 Stage4, No breakout, Vol low    +3.3%  +3.7%   +2.8%
+     GSP   2026-01-13       11     S4    7 Stage4, No breakout, Vol low    +4.6%  +4.1%   +2.3%
+     GSP   2026-01-14       11   S1→2    9 No breakout                     +0.5%  +0.9%   +1.4%
+     GSP   2026-01-16       11     S1    8 No breakout, Vol low            +0.4%  +0.0%   +0.0%
+     GSP   2026-01-19       11     S1    8 No breakout, Vol low            -0.4%  +0.4%   -0.9%
+     GSP   2026-01-20       11     S1    9 No breakout                     +1.3%  -0.9%   -0.9%
+     GSP   2026-01-21       11     S1    8 No breakout, Vol low            +0.4%  -0.9%   -0.9%
+     GSP   2026-01-22       11     S1    8 No breakout, Vol low            -1.8%  -1.8%   -1.8%
+     GSP   2026-01-23       11     S1    8 No breakout, Vol low            -0.4%  +0.4%   -0.4%
+     GSP   2026-01-26       11     S1    8 No breakout, Vol low            +0.9%  +0.9%   +0.0%
+     GSP   2026-01-27       11     S1    8 No breakout, Vol low            -0.4%  +0.0%   +0.4%
+     GSP   2026-01-28       11     S1    8 No breakout, Vol low            -1.8%  -1.3%   -0.4%
+     GSP   2026-01-29       11     S1    8 No breakout, Vol low            +0.5%  +0.0%   +0.9%
+     GSP   2026-01-30       11     S1    8 No breakout, Vol low            +1.8%  +0.0%   +1.4%
+     GSP   2026-02-02       11     S1    8 No breakout, Vol low            +0.9%  +0.0%   +5.4%
+     GSP   2026-02-03       11     S1    8 No breakout, Vol low            -0.9%  -0.9%  +11.6%
+     GSP   2026-02-04       11     S1    8 No breakout, Vol low            -1.3%  -0.9%  +12.9%
+     GSP   2026-02-05       11     S1    8 No breakout, Vol low            -0.4%  +0.4%  +15.7%
+     GSP   2026-02-06       11     S1    8 No breakout, Vol low            -0.5%  +0.9%  +16.2%
+     GSP   2026-02-09       11     S1    8 No breakout, Vol low            +0.5%  +0.9%  +21.6%
+     GSP   2026-02-10       11     S4    7 Stage4, No breakout, Vol low    +0.9%  +1.4%  +14.0%
+     GSP   2026-02-11       11     S1    8 No breakout, Vol low            +0.0%  +5.4%   +9.0%
+     GSP   2026-02-12       11     S1    8 No breakout, Vol low            +0.4% +12.6%  +11.2%
+     GSP   2026-02-13       11     S1    8 No breakout, Vol low            +0.4% +13.9%     n/a
+     GSP   2026-02-23       11     S1    8 No breakout, Vol low            +0.0% +15.2%     n/a
+     GSP   2026-02-24       11     S1    8 No breakout, Vol low            +0.0% +15.2%     n/a
+     GSP   2026-02-25       11     S1    8 No breakout, Vol low            +4.9% +20.5%     n/a
+     GSP   2026-02-26       11     S1    8 No breakout, Vol low           +12.1% +12.5%     n/a
+     GSP   2026-03-02       13     S2    7 No breakout, Stop>10%, R:R<2    +2.8%  -1.2%     n/a
+     GSP   2026-03-03       13     S2    7 No breakout, Stop>10%, R:R<2    +1.6%    n/a     n/a
+     GSP   2026-03-10       12     S2    7 ATL(not BTL), Box invalid, No breakout    n/a    n/a     n/a
+     HPG   2025-06-19       22     S1    7 No breakout, Vol low, RSI not OS  -0.2%  +1.2%  +10.4%
+     HPG   2025-06-20       22     S1    7 No breakout, Vol low, RSI not OS  +0.0%  +0.7%  +11.8%
+     HPG   2025-06-23       22     S1    7 No breakout, Vol low, RSI not OS  +1.3%  +2.4%  +16.2%
+     HPG   2025-06-24       22     S1    7 No breakout, Vol low, RSI not OS  +1.3%  +2.7%  +14.4%
+     HPG   2025-06-25       23     S1    7 No breakout, Vol low, RSI not OS  +0.8%  +2.6%  +12.5%
+     HPG   2025-06-26       23     S2    7 No breakout, Vol low, RSI not OS  -0.4%  +3.5%  +14.5%
+     HPG   2025-06-27       23     S2    7 No breakout, Vol low, RSI not OS  -0.9%  +8.1%  +13.8%
+     HPG   2025-06-30       23     S2    7 No breakout, Vol low, RSI not OS  +0.9%  +9.0%  +14.1%
+     HPG   2025-07-01       23     S2    7 No breakout, Vol low, RSI not OS  +2.0% +11.0%  +15.7%
+     HPG   2025-07-02       23     S2    7 No breakout, Vol low, RSI not OS  +1.5% +13.5%  +15.5%
+     HPG   2025-07-03       23     S2    7 No breakout, Vol low, RSI not OS  +2.2% +11.5%  +14.3%
+     HPG   2025-07-04       23     S2    7 No breakout, Vol low, RSI not OS  +6.2%  +9.7%  +11.8%
+     HPG   2025-07-07       24     S2    7 No breakout, Vol low, RSI not OS  +4.9% +10.6%  +10.4%
+     HPG   2025-07-08       25     S2    7 RSI not OS, Stop>10%, R:R<2     +1.8%  +5.3%   +6.7%
+     HPG   2025-08-06       27     S2    7 ATL(not BTL), Vol low, RSI not OS  +3.3%  +3.3%   +0.4%
+     PHR   2025-07-29       60     S2    7 ATL(not BTL), No breakout, RSI not OS  +4.1%  +0.8%   +0.8%
+     PHR   2025-08-05       59     S2    7 ATL(not BTL), No breakout, RSI not OS  +2.3%  +2.3%   -7.8%
+     PHR   2025-08-11       61     S2    7 ATL(not BTL), No breakout, RSI not OS  +1.9%  -5.3%   -9.2%
+     PHR   2025-08-13       62     S2    7 ATL(not BTL), No breakout, RSI not OS  -4.2% -13.0%   -9.3%
+     PHR   2025-11-21       56     S2    8 No breakout, Vol low            -1.6%  +1.6%   +0.2%
+     PHR   2025-11-24       56     S2    8 No breakout, Vol low            -0.2%  +4.1%   -2.2%
+     PHR   2025-11-25       55  Trans    8 No breakout, Vol low            +2.5%  +5.4%   +1.4%
+     PHR   2025-11-26       56  Trans    8 No breakout, Vol low            +0.0%  +4.3%   +2.5%
+     PHR   2025-11-27       57     S2    9 No breakout                     -2.5%  +1.1%   +1.8%
+     PHR   2025-11-28       56  Trans    8 No breakout, Vol low            +2.5%  +2.5%   +2.5%
+     PHR   2025-12-01       55  Trans    8 No breakout, Vol low            +5.1%  +3.4%   +4.7%
+     PHR   2025-12-02       57     S2    9 No breakout                     +2.1%  -1.4%   +1.8%
+     PHR   2025-12-04       58     S2    9 No breakout                     -1.7%  -3.8%   -3.3%
+     PHR   2025-12-05       58     S2    8 No breakout, Vol low            -1.7%  -1.7%   -3.4%
+     PHR   2025-12-08       57     S2    8 No breakout, Vol low            -0.2%  +0.7%   -2.3%
+     PHR   2025-12-09       57     S2    8 No breakout, Vol low            -1.4%  +0.0%   -1.4%
+     PHR   2025-12-10       57     S2    8 No breakout, Vol low            -4.6%  +1.2%   +3.3%
+     PHR   2025-12-11       56  Trans    8 No breakout, Vol low            -0.4%  +3.2%   +4.1%
+     PHR   2025-12-12       54  Trans    7 No breakout, Stop>10%, R:R<2    +4.6%  +4.0%   +4.2%
+     PHR   2025-12-15       56  Trans    8 No breakout, Vol low            +2.9%  +0.5%   +4.1%
+     PHR   2025-12-16       57     S2    8 No breakout, Vol low            +0.0%  -1.8%   +5.3%
+     PHR   2025-12-17       58     S2    8 No breakout, Vol low            +0.3%  -3.0%   +1.4%
+     PHR   2025-12-18       57  Trans    8 No breakout, Vol low            +1.8%  -1.4%   +9.5%
+     PHR   2025-12-19       58     S2    8 No breakout, Vol low            -1.9%  +2.1%   +8.7%
+     PHR   2025-12-22       58     S2    8 No breakout, Vol low            -2.9%  +0.9%   +9.5%
+     PHR   2025-12-23       57  Trans    8 No breakout, Vol low            -1.2%  +0.2%  +12.0%
+     PHR   2025-12-24       56  Trans    8 No breakout, Vol low            -0.7%  +3.6%  +20.6%
+     PHR   2025-12-25       56  Trans    8 No breakout, Vol low            +0.4%  +7.1%  +17.9%
+     PHR   2025-12-26       56  Trans    8 No breakout, Vol low            +5.5%  +4.5%  +21.8%
+     PHR   2025-12-29       56  Trans    8 No breakout, Vol low            +4.1% +11.0%  +17.4%
+     PHR   2025-12-30       59   S1→2    9 No breakout                     -3.7%  +6.4%   +6.1%
+     PHR   2025-12-31       58     S2    8 No breakout, Vol low            -0.3%  +8.5%   +9.4%
+     PHR   2026-01-05       57  Trans    9 No breakout                     +5.6% +11.8%   +9.5%
+     PHR   2026-01-06       58     S2    9 No breakout                     +0.2% +16.5%   +7.2%
+     PHR   2026-01-07       60     S2    9 No breakout                     +4.0% +10.0%   +6.7%
+     PHR   2026-01-08       58     S2    9 No breakout                     +7.5% +16.6%   +7.4%
+     PHR   2026-01-09       62     S2    8 Stop>10%, R:R<2                 +1.8%  +5.8%   -0.6%
+     PHR   2026-01-12       63     S2    7 No breakout, Stop>10%, R:R<2    +1.1%  -0.3%   +2.4%
+     PLX   2025-12-03       35     S1    7 No breakout, Vol low, EMA below  -0.6%  -2.6%   +2.9%
+     PLX   2025-12-04       35     S1    8 No breakout, Vol low            +3.1%  -3.0%   +0.6%
+     PLX   2025-12-05       34     S1    8 No breakout, Vol low            +1.7%  +0.0%   +1.9%
+     PLX   2025-12-09       35     S1    8 No breakout, Vol low            -1.7%  -0.6%   +4.3%
+     PLX   2025-12-10       35     S1    8 No breakout, Vol low            -2.6%  +0.7%   +3.3%
+     PLX   2025-12-11       34     S1    8 No breakout, Vol low            -1.5%  +2.6%   +2.6%
+     PLX   2025-12-12       34  Trans    8 No breakout, Vol low            +2.1%  +5.6%   +7.7%
+     PLX   2025-12-15       34     S1    7 No breakout, Vol low, EMA below  +2.2%  +3.7%  +14.3%
+     PLX   2025-12-16       34     S1    7 No breakout, Vol low, EMA below  +1.2%  +1.9%  +20.5%
+     PLX   2025-12-17       35     S1    9 No breakout                     +0.6%  +2.6%  +19.8%
+     PLX   2025-12-18       35     S1    8 No breakout, Vol low            +1.4%  +4.9%  +23.6%
+     PLX   2025-12-19       35     S1    8 No breakout, Vol low            +2.2%  +2.6%  +21.7%
+     PLX   2025-12-22       35     S1    8 No breakout, Vol low            -0.4%  +0.0%  +28.5%
+     PLX   2025-12-23       36     S1    9 No breakout                     -1.5%  +2.0%  +36.2%
+     PLX   2025-12-24       35     S1    8 No breakout, Vol low            +1.1% +10.2%  +47.4%
+     PLX   2025-12-25       35     S1    8 No breakout, Vol low            +4.1% +18.3%  +48.4%
+     PLX   2025-12-26       36     S1    8 No breakout, Vol low            +0.6% +16.7%  +56.4%
+     PLX   2025-12-30       36     S1    8 No breakout, Vol low            +1.5% +18.6%  +65.3%
+     PLX   2025-12-31       35     S1    8 No breakout, Vol low            +9.8% +28.5%  +60.1%
+     PLX   2026-01-05       36   S1→2    9 No breakout                    +14.2% +33.6%  +50.4%
+     PLX   2026-01-06       39     S2    8 Stop>10%, R:R<2                 +7.1% +33.7%  +47.1%
+     PLX   2026-01-14       48     S2    7 Box invalid, Stop>10%, R:R<2    +7.2% +12.6%  +23.7%
+     PVC   2025-12-24       11     S1    7 No breakout, Vol low, RSI not OS  -1.8% +10.8%  +32.4%
+     PVC   2025-12-25       11     S1    7 No breakout, Vol low, RSI not OS  +7.3% +13.8%  +28.4%
+     PVC   2025-12-26       11     S1    8 No breakout, RSI not OS         +5.5% +16.5%  +31.2%
+     PVC   2025-12-29       12   S1→2    7 RSI not OS, Stop>10%, R:R<2     -3.4%  +9.4%  +18.8%
+     VHC   2025-12-24       54     S1    7 No breakout, Vol low, EMA below  +0.2%  +3.9%  +11.0%
+     VHC   2025-12-25       53  Trans    7 No breakout, Vol low, EMA below  +2.6%  +7.5%  +13.4%
+     VHC   2025-12-26       54     S1    7 No breakout, Vol low, EMA below  +5.4%  +6.3%  +17.3%
+     VHC   2025-12-29       54     S1    7 No breakout, Vol low, EMA below  +3.1%  +5.0%  +15.8%
+     VHC   2025-12-30       57   S1→2    7 ATL(not BTL), No breakout, EMA below  -1.9%  +0.4%   +9.5%
+     VHC   2026-01-05       56     S1    7 No breakout, Vol low, EMA below  +2.7%  +8.5%   +6.3%
+     VHC   2026-01-06       56     S1    7 No breakout, Vol low, EMA below  +2.5%  +6.8%   +7.7%
+     VHC   2026-01-08       57     S1    7 ATL(not BTL), No breakout, EMA below  -0.5% +10.3%   +6.8%
+     VHC   2026-01-12       57     S1    7 ATL(not BTL), No breakout, Vol low  +6.0%  +9.2%  +13.9%
+     VHC   2026-01-13       59     S2    9 ATL(not BTL)                    +1.5%  +3.8%  +18.1%
+
+==================================================================================================================================
+PART 5: ALL DARVAS BREAKOUT DAYS (regardless of other conditions)
+==================================================================================================================================
+
+  Total Darvas breakouts: 75
+
+    Sym         Date    Close     DrvH  Chase%   Vol  Stage   RSI  EMA StpOK     T+2     T+7    T+14   T+2dd Full
+  -------------------------------------------------------------------------------------------------------------------
+    BFC   2026-01-07       44       44    +1.4   2.9   S1→2    67    ✗     ✓   +3.4%  +10.8%   +3.8%   +0.2%     
+    BFC   2026-01-14       49       47    +3.6   4.7     S2    77    ✓     ✗   +0.4%   -4.3%   +0.4%   -1.3%     
+    BFC   2026-02-05       53       51    +3.9   2.6     S2    71    ✓     ✗   +0.9%  +16.5%  +44.1%   -1.5%     
+    BFC   2026-02-11       57       55    +2.2   3.7     S2    77    ✓     ✗   +6.9%  +30.0%  +25.4%   +1.1%     
+    BFC   2026-02-24       66       63    +4.1   1.4     S2    81    ✓     ✗   +4.6%  +14.1%     n/a   +1.1%     
+    DGW   2025-06-04       35       34    +2.3   2.0     S4    42    ✗     ✗   -4.4%  +14.3%  +22.0%   -4.4%     
+    DGW   2025-06-10       37       36    +4.1   3.6     S4    52    ✓     ✗   +8.6%  +18.2%  +18.6%   +0.0%     
+    DGW   2025-06-17       41       41    +0.5   1.6  Trans    57    ✓     ✗   +7.0%  +12.2%   +7.4%   -2.0%     
+    DGW   2025-06-19       44       42    +4.8   2.3  Trans    57    ✓     ✗   -1.9%   +0.3%   +0.8%   -4.7%     
+    DGW   2025-06-26       46       45    +2.2   1.0     S2    61    ✓     ✗   -4.3%   -4.2%   -3.9%   -6.2%     
+    DGW   2025-07-18       47       46    +1.0   2.1     S2    75    ✓     ✗   -0.3%   -7.2%   -0.3%   -3.0%     
+    DGW   2025-07-23       48       48    +1.1   1.4     S2    75    ✓     ✗   -3.2%   -9.6%   +0.3%   -3.2%     
+    DGW   2025-11-17       43       41    +3.0   3.1   S1→2    43    ✗     ✗   +1.9%   +1.8%   +2.0%   +0.6%     
+    DGW   2026-01-12       44       44    +0.3   1.9   S1→2    55    ✓     ✗   +0.9%   +4.9%  +12.1%   -1.7%     
+    DGW   2026-01-16       46       46    +0.2   2.4     S2    61    ✓     ✗   +2.0%   -1.7%  +16.3%   -2.1%     
+    DGW   2026-02-02       52       50    +5.9   2.4     S2    74    ✓     ✗   +6.9%   -3.8%   -2.3%   +1.1%     
+    DPM   2025-06-10       19       19    +0.7   2.7   S1→2    46    ✓     ✓   +0.7%  +11.0%  +10.5%   -1.0%    ★
+    DPM   2025-06-13       20       20    +0.3   2.4     S2    46    ✓     ✓   +7.7%   +7.0%   +8.1%   +1.0%    ★
+    DPM   2025-07-21       23       22    +2.1   2.1     S2    87    ✓     ✓   +5.2%   +4.4%  +24.1%   +0.7%     
+    DPM   2025-08-06       25       24    +1.6   1.6     S2    95    ✓     ✗  +14.4%  +13.2%   +7.7%   +6.9%     
+    DPM   2025-11-05       25       25    +0.8   2.5     S2    48    ✗     ✗   -5.0%   -4.2%   -7.2%   -5.6%     
+    DPM   2026-01-07       23       23    +0.9   2.2  Trans    39    ✗     ✓   +1.3%   +2.8%   -0.6%   -0.2%     
+    DPM   2026-01-12       24       24    +0.8   2.6   S1→2    52    ✓     ✗   +2.5%   +1.4%   -1.4%   -2.3%     
+    DPM   2026-01-14       25       25    +0.8   3.1     S2    52    ✓     ✗   -3.2%   -1.4%   -0.8%   -3.6%     
+    DPM   2026-01-22       26       26    +1.4   3.3     S2    61    ✓     ✗  -11.0%   -5.4%   -2.3%  -11.6%     
+    DPM   2026-02-24       27       26    +2.1   3.0     S2    65    ✓     ✗   -1.5%  +13.4%     n/a   -2.0%     
+    DPM   2026-02-27       28       27    +1.5   2.5     S2    72    ✓     ✗  +13.6%  +13.4%     n/a   +5.1%     
+    EVF   2026-02-23       13       12    +3.6   4.3   S1→2    64    ✓     ✗   +0.0%   +3.1%     n/a   -0.8%     
+    EVF   2026-02-26       14       13    +3.4   2.6     S2    64    ✓     ✗   -0.4%   -8.3%     n/a   -4.3%     
+    G36   2025-05-13        6        6    +1.7   1.1     S4    44    ✗     ✗   +6.3%   +6.3%  +26.9%   -3.2%     
+    G36   2025-05-15        6        6    +6.3   5.9   S1→2    54    ✓     ✗   +0.0%   -1.6%  +43.3%   -4.5%     
+    G36   2025-05-20        7        6    +1.5   2.6  Trans    54    ✓     ✗   -2.9%  +11.5%  +36.3%   -4.4%     
+    G36   2025-05-28        7        7    +5.6   5.6     S3    61    ✓     ✗   +1.4%  +28.1%  +29.3%   -2.7%     
+    G36   2025-06-03        8        8    +9.8   7.4     S2    73    ✓     ✗   +8.9%   +8.9%   +2.2%   +1.2%     
+    G36   2025-08-11       11        9   +12.2   1.4     S2    82    ✓     ✗   +1.8%   -0.9%   +0.0%   -2.7%     
+    G36   2025-12-05        9        9    +4.5   5.6   S1→2    36    ✗     ✗   -3.3%   -6.5%   +1.1%   -7.6%     
+    G36   2025-12-29       10       10    +2.1   1.3     S2    53    ✓     ✗   +7.2%  +17.5%  +35.1%   -2.1%     
+    G36   2026-01-06       11       11    +4.7   3.5     S2    53    ✓     ✗   -1.8%   +8.0%   +9.8%   -1.8%     
+    G36   2026-01-14       12       12    +2.5   2.0     S2    76    ✓     ✗  +12.4%   +3.3%   +8.3%   -3.3%     
+    G36   2026-01-16       14       12    +8.8   1.8     S2    76    ✓     ✗   -3.7%  -10.3%   -2.9%   -6.6%     
+    GSP   2026-01-08       11       11    +0.5   1.1     S4    28    ✗     ✓   +0.9%   +5.2%   +5.6%   +0.5%     
+    GSP   2026-01-15       11       11    +0.9   2.5     S1    51    ✓     ✓   -1.8%   -2.2%   -1.3%   -2.6%    ★
+    GSP   2026-02-27       12       11    +3.1   6.3     S3    86    ✓     ✓   +8.1%   +3.4%     n/a   +3.0%    ★
+    GSP   2026-03-06       14       13    +2.3   3.5     S2    86    ✓     ✗  -10.0%     n/a     n/a  -13.0%     
+    HPG   2025-07-08       25       24    +4.2   2.5     S2    65    ✓     ✗   +1.8%   +5.3%   +6.7%   -0.6%     
+    HPG   2025-07-10       25       25    +0.2   2.5     S2    65    ✓     ✗   +2.4%   +4.2%   +1.0%   -0.4%     
+    HPG   2025-08-06       27       27    +0.2   1.4     S2    85    ✓     ✓   +3.3%   +3.3%   +0.4%   -0.4%     
+    HPG   2025-09-04       30       29    +2.6   1.6     S2    80    ✓     ✗   -3.2%   +1.7%   -2.7%   -4.0%     
+    HPG   2025-09-15       30       30    +0.8   1.0     S2    82    ✓     ✗   -3.8%   -4.3%   -8.9%   -3.8%     
+    PHR   2025-05-27       48       48    +1.2   1.9     S4    46    ✗     ✗   +6.3%   +2.6%   +4.9%   -0.3%     
+    PHR   2025-05-29       51       49    +3.8   2.2     S4    46    ✗     ✗   -2.7%   -2.9%   -1.3%   -6.5%     
+    PHR   2025-06-19       54       53    +2.4   1.7   S1→2    40    ✓     ✗   +6.9%  +10.3%  +11.2%   -0.5%     
+    PHR   2025-07-02       62       60    +2.7   1.5     S2    45    ✓     ✗   -6.3%   -4.4%   -3.3%   -6.8%     
+    PHR   2025-12-03       58       58    +0.2   3.4     S2    53    ✓     ✓   +0.0%   -6.0%   -2.2%   -0.5%    ★
+    PHR   2026-01-09       62       62    +1.1   3.7     S2    71    ✓     ✗   +1.8%   +5.8%   -0.6%   -2.2%     
+    PHR   2026-01-15       68       66    +2.1   2.8     S2    71    ✓     ✗   +0.3%   -8.0%   -1.3%   -3.5%     
+    PHR   2026-03-03       69       69    +0.4   1.3     S2    58    ✓     ✗  -10.1%     n/a     n/a  -10.1%     
+    PLX   2025-12-08       36       35    +2.0   2.4   S1→2    39    ✓     ✓   -4.0%   -3.9%   -1.4%   -4.3%    ★
+    PLX   2025-12-29       36       36    +0.6   2.8   S1→2    52    ✓     ✓   -3.3%  +17.8%  +61.6%   -3.3%    ★
+    PLX   2026-01-06       39       37    +4.7   4.9     S2    82    ✓     ✗   +7.1%  +33.7%  +47.1%   +0.3%     
+    PLX   2026-01-14       48       46    +6.5   2.7     S2    90    ✓     ✗   +7.2%  +12.6%  +23.7%   -3.1%     
+    PLX   2026-03-03       66       65    +2.0   2.2     S2    82    ✓     ✗   -2.1%     n/a     n/a   -2.1%     
+    PVC   2025-12-29       12       12    +1.7   5.1   S1→2    50    ✓     ✗   -3.4%   +9.4%  +18.8%   -4.3%     
+    PVC   2026-01-06       12       12    +2.5   3.9     S2    60    ✓     ✗   +3.3%  +19.5%  +11.4%   -1.6%     
+    PVC   2026-01-14       15       14    +8.1   3.7     S2    71    ✓     ✗   -4.8%   -8.2%   +7.5%   -6.1%     
+    PVC   2026-02-02       16       16    +0.6   1.6     S2    84    ✓     ✗   +0.0%  -16.5%   +7.6%   -1.9%     
+    PVC   2026-02-27       17       17    +1.2   2.6     S2    79    ✓     ✗  +20.6%   -2.4%     n/a   +0.0%     
+    STB   2025-12-22       52       52    +1.7   2.0   S1→2    50    ✗     ✗  +12.0%  +10.7%   +3.2%   +3.4%     
+    STB   2025-12-29       60       59    +1.9   2.4     S2    57    ✓     ✗   -3.2%  -13.5%   -3.0%   -3.2%     
+    STB   2026-01-21       62       61    +2.0   1.3     S2    53    ✓     ✗   +0.8%   +1.4%   -4.2%   +0.8%     
+    STB   2026-02-25       67       66    +0.5   1.8     S2    71    ✓     ✗   -1.8%   -4.3%     n/a   -1.8%     
+    VHC   2026-01-13       59       58    +0.7   2.8     S2    62    ✓     ✓   +1.5%   +3.8%  +18.1%   -1.0%     
+    VHC   2026-01-19       63       61    +3.4   2.8     S2    62    ✓     ✗   -1.6%   -3.2%   -4.8%   -4.8%     
+    VHC   2026-01-29       65       64    +1.9   3.0     S2    69    ✓     ✗   +6.5%   -7.7%   -3.5%   -1.4%     
+    VHC   2026-02-02       69       66    +5.5   3.1     S2    53    ✓     ✗   -1.4%  -13.3%  -11.1%   -2.2%     
+
+  Breakout T+2 statistics:
+    All breakouts: Win 41/75 (55%) | Avg +1.43%
+    + Vol confirm:  Win 34/63 (54%) | Avg +1.75%
+    + Vol + EMA:    Win 29/54 (54%) | Avg +1.86%
+    + Vol+EMA+RSI:  Win 18/37 (49%) | Avg +1.73%
+    No chase ≤3.0%: Win 28/51 (55%) | Avg +1.35%
+
+==================================================================================================================================
+PART 6: PARAMETER SENSITIVITY (how T+2 win rate changes with thresholds)
+==================================================================================================================================
+
+  6a. Darvas Max Width threshold:
+    Width ≤10%: Signals  11 | Win   7 ( 63.6%) | Avg T+2 +1.74%
+    Width ≤12%: Signals  20 | Win  10 ( 50.0%) | Avg T+2 +0.69%
+    Width ≤15%: Signals  29 | Win  17 ( 58.6%) | Avg T+2 +1.63%
+    Width ≤18%: Signals  39 | Win  22 ( 56.4%) | Avg T+2 +1.23%
+    Width ≤20%: Signals  45 | Win  24 ( 53.3%) | Avg T+2 +1.15%
+    Width ≤25%: Signals  48 | Win  27 ( 56.2%) | Avg T+2 +1.37%
+
+  6b. Volume confirmation multiplier:
+    Vol ≥1.0x: Signals  74 | Win  41 ( 55.4%) | Avg T+2 +1.50%
+    Vol ≥1.2x: Signals  71 | Win  39 ( 54.9%) | Avg T+2 +1.52%
+    Vol ≥1.5x: Signals  63 | Win  34 ( 54.0%) | Avg T+2 +1.75%
+    Vol ≥2.0x: Signals  52 | Win  28 ( 53.8%) | Avg T+2 +1.45%
+    Vol ≥2.5x: Signals  38 | Win  21 ( 55.3%) | Avg T+2 +1.12%
+
+  6c. Chase threshold (max % above pivot):
+    Chase ≤ 1%: Signals  17 | Win   9 ( 52.9%) | Avg T+2 +0.62%
+    Chase ≤ 2%: Signals  30 | Win  17 ( 56.7%) | Avg T+2 +2.15%
+    Chase ≤ 3%: Signals  41 | Win  23 ( 56.1%) | Avg T+2 +1.91%
+    Chase ≤ 5%: Signals  55 | Win  30 ( 54.5%) | Avg T+2 +1.73%
+    Chase ≤ 7%: Signals  60 | Win  33 ( 55.0%) | Avg T+2 +1.82%
+    Chase ≤10%: Signals  63 | Win  34 ( 54.0%) | Avg T+2 +1.75%
+
+  6d. Max Stop % threshold:
+    Stop ≤ 5%: Signals   0
+    Stop ≤ 7%: Signals   4 | Win   3 ( 75.0%) | Avg T+2 +3.05%
+    Stop ≤ 8%: Signals   6 | Win   4 ( 66.7%) | Avg T+2 +2.65%
+    Stop ≤10%: Signals  11 | Win   7 ( 63.6%) | Avg T+2 +1.71%
+    Stop ≤12%: Signals  15 | Win   8 ( 53.3%) | Avg T+2 +0.84%
+    Stop ≤15%: Signals  30 | Win  17 ( 56.7%) | Avg T+2 +1.31%
+
+  6e. RSI Oversold Lookback (bars):
+    Lookback ≤ 50: Signals  30 | Win  13 ( 43.3%) | Avg T+2 +1.03%
+    Lookback ≤ 75: Signals  35 | Win  16 ( 45.7%) | Avg T+2 +1.02%
+    Lookback ≤100: Signals  40 | Win  19 ( 47.5%) | Avg T+2 +1.44%
+    Lookback ≤150: Signals  42 | Win  20 ( 47.6%) | Avg T+2 +1.29%
+    Lookback ≤200: Signals  50 | Win  26 ( 52.0%) | Avg T+2 +1.27%
+
+==================================================================================================================================
+PART 7: ENTRY CONTEXT ANALYSIS (momentum, distance, volume patterns)
+==================================================================================================================================
+
+  7a. Feature correlation with T+2 return:
+    chase_pct         : r = +0.028 (n=75)
+    stop_pct          : r = +0.082 (n=75)
+    vol_ratio_20d     : r = +0.054 (n=75)
+    vol_ratio_50d     : r = +0.078 (n=75)
+    mom_5d            : r = +0.162 (n=75)
+    mom_10d           : r = -0.015 (n=75)
+    mom_20d           : r = +0.091 (n=75)
+    dist_ma150        : r = +0.057 (n=75)
+    darvas_width      : r = +0.093 (n=75)
+    rsi_weekly        : r = +0.238 (n=75)
+    rsi14             : r = -0.102 (n=75)
+    atr_pct           : r = +0.089 (n=75)
+    rr_ratio          : r = -0.024 (n=75)
+
+  7b. Stage at breakout vs T+2:
+    S1→2    : n= 13 | Win 7/13 (54%) | Avg +1.10%
+    S2      : n= 49 | Win 26/49 (53%) | Avg +1.36%
+    S4      : n=  6 | Win 4/6 (67%) | Avg +2.52%
+    S1      : n=  1 | Win 0/1 (0%) | Avg -1.75%
+    S3      : n=  2 | Win 2/2 (100%) | Avg +4.74%
+    Trans   : n=  4 | Win 2/4 (50%) | Avg +0.85%
+
+  7c. 5-day momentum at entry vs T+2:
+    Mom5d [  0,  3): n=  2 | Win 2/2 (100%) | Avg +0.83%
+    Mom5d [  3,  7): n= 27 | Win 15/27 (56%) | Avg +1.36%
+    Mom5d [  7, 15): n= 32 | Win 17/32 (53%) | Avg +1.04%
+    Mom5d [ 15, 99): n= 14 | Win 7/14 (50%) | Avg +2.54%
+
+  7d. Daily RSI(14) at entry vs T+2:
+    RSI14 [ 50, 60): n=  7 | Win 2/7 (29%) | Avg -0.20%
+    RSI14 [ 60, 70): n= 25 | Win 18/25 (72%) | Avg +2.98%
+    RSI14 [ 70, 80): n= 18 | Win 10/18 (56%) | Avg +1.62%
+    RSI14 [ 80,100): n= 25 | Win 11/25 (44%) | Avg +0.20%
+
+==================================================================================================================================
+PART 8: T+2 DRAWDOWN ANALYSIS (max intraday pain from entry)
+==================================================================================================================================
+
+  All breakouts T+2 max drawdown:
+    Mean: -2.26% | Median: -2.06% | Worst: -12.96%
+    % with dd > -3%: 29/75 (39%)
+    % with dd > -5%: 10/75 (13%)
+
+  No-chase (≤3.0%) breakouts T+2 max drawdown:
+    Mean: -2.26% | Median: -2.06% | Worst: -12.96%
+
+==================================================================================================================================
+PART 9: OPTIMAL CONDITION COMBINATIONS (finding T+2 ≥ 0% recipe)
+==================================================================================================================================
+
+  Combination                                    Sigs           Win      Avg           Win      Avg           Win      Avg           Win      Avg   T+2Worst
+  ----------------------------------------------------------------------------------------------------------------------------------
+  Darvas BO only                                   75    41/75(55%)    +1.4%    43/72(60%)    +3.6%    40/64(62%)    +8.6%    43/57(75%)   +14.5%     -11.0%
+  Darvas BO + Vol                                  63    34/63(54%)    +1.7%    37/61(61%)    +3.8%    35/54(65%)    +9.4%    36/47(77%)   +16.1%     -11.0%
+  Darvas BO + Vol + EMA                            54    29/54(54%)    +1.9%    31/52(60%)    +3.9%    29/45(64%)   +10.6%    29/38(76%)   +15.0%     -11.0%
+  Darvas BO + Vol + RSI                            40    19/40(48%)    +1.4%    24/38(63%)    +4.4%    19/33(58%)   +10.5%    23/30(77%)   +15.7%     -11.0%
+  Darvas BO + Vol + EMA + RSI                      37    18/37(49%)    +1.7%    22/35(63%)    +4.5%    17/30(57%)   +10.8%    20/27(74%)   +14.4%     -11.0%
+  Full BTL (current)                                7      3/7(43%)    +1.1%      4/7(57%)    +3.9%      3/6(50%)   +12.5%     6/6(100%)   +29.0%      -4.0%
+  Full BTL + Chase≤3%                               6      2/6(33%)    -0.1%      3/6(50%)    +4.0%      3/6(50%)   +12.5%     6/6(100%)   +29.0%      -4.0%
+  Full BTL + Chase≤2%                               6      2/6(33%)    -0.1%      3/6(50%)    +4.0%      3/6(50%)   +12.5%     6/6(100%)   +29.0%      -4.0%
+  Darvas BO+Vol+EMA + Chase≤3%                     35    19/35(54%)    +1.8%    20/33(61%)    +3.6%    17/29(59%)    +9.1%    20/25(80%)   +12.5%     -11.0%
+  Darvas BO+Vol+EMA + Mom5d<7%                     18    11/18(61%)    +2.3%    12/18(67%)    +3.5%    10/17(59%)   +10.0%    13/15(87%)   +16.0%     -11.0%
+  Darvas BO+Vol+EMA + RSI14<70                     19    11/19(58%)    +2.9%    11/18(61%)    +3.5%    10/16(62%)   +11.8%    11/13(85%)   +16.2%      -4.0%
+  Darvas BO+Vol+EMA+RSI + Stop≤8%                   5      3/5(60%)    +2.5%      3/5(60%)    +2.3%      2/4(50%)    +3.7%     4/4(100%)   +29.7%      -4.0%
+  BO+Vol+EMA+RSI+Chase≤3%+Stp≤8%                    4      2/4(50%)    +1.1%      2/4(50%)    +2.0%      2/4(50%)    +3.7%     4/4(100%)   +29.7%      -4.0%
+
+==================================================================================================================================
+PART 10: PER-STOCK PRICE PERFORMANCE IN ANALYSIS PERIOD
+==================================================================================================================================
+
+  Symbol        Start          End   Period     Open    Close     High      Low   Return  MaxGain    MaxDD Signals
+  -------------------------------------------------------------------------------------------------------------------
+     EVF   2026-01-06   2026-03-10     41d       11       14       14       11   +23.9%   +32.1%    -2.8%       0
+     GSP   2026-01-06   2026-03-10     41d       11       12       14       10   +15.2%   +32.7%    -1.4%       2
+     PVC   2025-12-22   2026-03-10     50d       11       17       23       11   +48.2%  +105.4%    -4.5%       0
+     STB   2025-12-22   2026-03-10     50d       52       65       70       49   +24.0%   +34.0%    -7.3%       0
+     G36   2025-05-05   2026-03-10    213d        6       10       14        6   +80.1%  +148.7%    -5.0%       0
+     PLX   2025-12-03   2026-03-10     63d       35       54       70       33   +55.2%  +103.5%    -3.8%       2
+     DPM   2025-06-06   2026-03-10    189d       19       31       33       19   +68.4%   +79.1%    -0.3%       2
+     PHR   2025-05-26   2026-03-10    198d       47       58       70       44   +23.0%   +47.8%    -7.5%       1
+     DGW   2025-05-16   2026-03-10    204d       33       42       58       31   +27.4%   +74.5%    -6.6%       0
+     VHC   2025-12-24   2026-03-10     48d       54       57       70       53    +6.3%   +30.4%    -1.3%       0
+     HPG   2025-06-19   2025-09-17     63d       22       29       31       22   +30.2%   +37.6%    -1.1%       0
+     BFC   2026-01-06   2026-03-10     41d       44       71       78       42   +62.8%   +78.7%    -2.5%       0
+
+==================================================================================================================================
+PART 12: REALISTIC TRADE SIMULATION - SL HIT / TP HIT / HOLD TO HORIZON
+  Entry = Close on signal day | SL = -10% from entry | TP = +20% from entry
+  Track bar-by-bar: does Low hit SL first, or High hit TP first, or hold to horizon?
+==================================================================================================================================
+
+  12a. ALL DARVAS BREAKOUT TRADES (SL=-10.0% / TP=20.0%)
+
+    Sym         Date  Entry    SL@    TP@  Chase% | T7Out   T7Ret T7Day | T14Out  T14Ret T14Day | T30Out  T30Ret T30Day |   MaxDD   MaxGn
+  -----------------------------------------------------------------------------------------------------------------------------------------------------------
+    BFC   2026-01-07     44     40     53    +1.4 |  HOLD  +10.8%    d7 |  HOLD   +3.8% d14.0 |    TP  +20.0% d22.0 |   +0.0%  +58.0%
+    BFC   2026-01-14     49     44     59    +3.6 |  HOLD   -4.3%    d7 |  HOLD   +0.4% d14.0 |    TP  +20.0% d21.0 |   -8.8%  +59.3%
+    BFC   2026-02-05     53     48     63    +3.9 |  HOLD  +16.5%    d7 |    TP  +20.0%  d8.0 |    TP  +20.0%  d8.0 |   -4.7%  +47.5%
+    BFC   2026-02-11     57     51     68    +2.2 |    TP  +20.0%    d5 |    TP  +20.0%  d5.0 |    TP  +20.0%  d5.0 |   +0.0%  +37.6%
+    BFC   2026-02-24     66     59     79    +4.1 |  HOLD  +14.1%    d7 |   N/A     n/a  dnan |   N/A     n/a  dnan |   -0.8%  +18.4%
+    DGW   2025-06-04     35     32     42    +2.3 |  HOLD  +14.3%    d7 |    TP  +20.0% d11.0 |    TP  +20.0% d11.0 |   -4.4%  +30.9%
+    DGW   2025-06-10     37     33     45    +4.1 |  HOLD  +18.2%    d7 |    TP  +20.0%  d8.0 |    TP  +20.0%  d8.0 |   +0.0%  +28.0%
+    DGW   2025-06-17     41     37     49    +0.5 |  HOLD  +12.2%    d7 |  HOLD   +7.4% d14.0 |  HOLD   +5.5% d30.0 |   -2.0%  +18.3%
+    DGW   2025-06-19     44     39     53    +4.8 |  HOLD   +0.3%    d7 |  HOLD   +0.8% d14.0 |  HOLD   -3.0% d30.0 |   -4.7%  +10.6%
+    DGW   2025-06-26     46     41     55    +2.2 |  HOLD   -4.2%    d7 |  HOLD   -3.9% d14.0 |  HOLD   +1.0% d30.0 |   -9.5%   +5.4%
+    DGW   2025-07-18     47     42     56    +1.0 |  HOLD   -7.2%    d7 |    SL  -10.0% d12.0 |    SL  -10.0% d12.0 |  -13.9%   +6.2%
+    DGW   2025-07-23     48     43     58    +1.1 |    SL  -10.0%    d5 |    SL  -10.0%  d5.0 |    SL  -10.0%  d5.0 |  -16.5%   +3.1%
+    DGW   2025-11-17     43     38     51    +3.0 |  HOLD   +1.8%    d7 |  HOLD   +2.0% d14.0 |    SL  -10.0% d20.0 |  -11.9%   +8.3%
+    DGW   2026-01-12     44     39     52    +0.3 |  HOLD   +4.9%    d7 |  HOLD  +12.1% d14.0 |    TP  +20.0% d16.0 |   -2.5%  +32.5%
+    DGW   2026-01-16     46     41     55    +0.2 |  HOLD   -1.7%    d7 |    TP  +20.0% d12.0 |    TP  +20.0% d12.0 |   -6.2%  +25.9%
+    DGW   2026-02-02     52     47     63    +5.9 |  HOLD   -3.8%    d7 |  HOLD   -2.3% d14.0 |    SL  -10.0% d16.0 |  -23.7%  +10.5%
+    DPM   2025-06-10     19     17     23    +0.7 |  HOLD  +11.0%    d7 |  HOLD  +10.5% d14.0 |    TP  +20.0% d30.0 |   -1.0%  +20.9%
+    DPM   2025-06-13     20     18     24    +0.3 |  HOLD   +7.0%    d7 |  HOLD   +8.1% d14.0 |    TP  +20.0% d28.0 |   +0.0%  +23.9%
+    DPM   2025-07-21     23     21     27    +2.1 |  HOLD   +4.4%    d7 |    TP  +20.0% d14.0 |    TP  +20.0% d14.0 |   -0.4%  +30.7%
+    DPM   2025-08-06     25     22     30    +1.6 |    TP  +20.0%    d3 |    TP  +20.0%  d3.0 |    TP  +20.0%  d3.0 |   +0.0%  +20.4%
+    DPM   2025-11-05     25     22     30    +0.8 |  HOLD   -4.2%    d7 |  HOLD   -7.2% d14.0 |    SL  -10.0% d27.0 |  -13.5%   +1.0%
+    DPM   2026-01-07     23     21     28    +0.9 |  HOLD   +2.8%    d7 |  HOLD   -0.6% d14.0 |  HOLD  +14.3% d30.0 |   -2.6%  +16.0%
+    DPM   2026-01-12     24     22     29    +0.8 |  HOLD   +1.4%    d7 |  HOLD   -1.4% d14.0 |    TP  +20.0% d30.0 |   -6.0%  +21.4%
+    DPM   2026-01-14     25     22     30    +0.8 |  HOLD   -1.4%    d7 |  HOLD   -0.8% d14.0 |    TP  +20.0% d29.0 |   -8.2%  +30.5%
+    DPM   2026-01-22     26     23     31    +1.4 |    SL  -10.0%    d2 |    SL  -10.0%  d2.0 |    SL  -10.0%  d2.0 |  -11.6%  +28.8%
+    DPM   2026-02-24     27     24     32    +2.1 |    TP  +20.0%    d6 |    TP  +20.0%  d6.0 |    TP  +20.0%  d6.0 |   -2.0%  +23.8%
+    DPM   2026-02-27     28     25     33    +1.5 |    TP  +20.0%    d6 |    TP  +20.0%  d6.0 |    TP  +20.0%  d6.0 |   +0.0%  +20.7%
+    EVF   2026-02-23     13     12     15    +3.6 |  HOLD   +3.1%    d7 |   N/A     n/a  dnan |   N/A     n/a  dnan |   -1.9%  +11.6%
+    EVF   2026-02-26     14     12     17    +3.4 |  HOLD   -8.3%    d7 |   N/A     n/a  dnan |   N/A     n/a  dnan |   -8.3%   +4.3%
+    G36   2025-05-13      6      5      7    +1.7 |  HOLD   +6.3%    d7 |    TP  +20.0% d12.0 |    TP  +20.0% d12.0 |   -3.2%  +58.6%
+    G36   2025-05-15      6      6      8    +6.3 |  HOLD   -1.6%    d7 |    TP  +20.0% d12.0 |    TP  +20.0% d12.0 |   -4.5%  +49.2%
+    G36   2025-05-20      7      6      8    +1.5 |  HOLD  +11.5%    d7 |    TP  +20.0% d10.0 |    TP  +20.0% d10.0 |   -5.8%  +44.9%
+    G36   2025-05-28      7      6      9    +5.6 |    TP  +20.0%    d5 |    TP  +20.0%  d5.0 |    TP  +20.0%  d5.0 |   -2.7%  +33.4%
+    G36   2025-06-03      8      8     10    +9.8 |  HOLD   +8.9%    d7 |  HOLD   +2.2% d14.0 |    SL  -10.0% d21.0 |  -11.3%  +12.4%
+    G36   2025-08-11     11     10     13   +12.2 |  HOLD   -0.9%    d7 |  HOLD   +0.0% d14.0 |  HOLD   -1.8% d30.0 |   -9.0%  +14.4%
+    G36   2025-12-05      9      8     11    +4.5 |    SL  -10.0%    d6 |    SL  -10.0%  d6.0 |    SL  -10.0%  d6.0 |  -10.9%  +57.6%
+    G36   2025-12-29     10      9     12    +2.1 |    TP  +20.0%    d7 |    TP  +20.0%  d7.0 |    TP  +20.0%  d7.0 |   -2.1%  +49.5%
+    G36   2026-01-06     11     10     13    +4.7 |  HOLD   +8.0%    d7 |    TP  +20.0%  d8.0 |    TP  +20.0%  d8.0 |   -1.8%  +29.5%
+    G36   2026-01-14     12     11     15    +2.5 |  HOLD   +3.3%    d7 |  HOLD   +8.3% d14.0 |  HOLD   -2.5% d30.0 |   -6.6%  +19.8%
+    G36   2026-01-16     14     12     16    +8.8 |    SL  -10.0%    d6 |    SL  -10.0%  d6.0 |    SL  -10.0%  d6.0 |  -16.9%   +6.6%
+    GSP   2026-01-08     11     10     13    +0.5 |  HOLD   +5.2%    d7 |  HOLD   +5.6% d14.0 |  HOLD   +5.2% d30.0 |   +0.0%   +8.5%
+    GSP   2026-01-15     11     10     14    +0.9 |  HOLD   -2.2%    d7 |  HOLD   -1.3% d14.0 |  HOLD  +13.2% d30.0 |   -3.9%  +15.8%
+    GSP   2026-02-27     12     11     14    +3.1 |  HOLD   +3.4%    d7 |   N/A     n/a  dnan |   N/A     n/a  dnan |   -3.4%  +19.1%
+    GSP   2026-03-06     14     12     16    +2.3 |    SL  -10.0%    d2 |    SL  -10.0%  d2.0 |    SL  -10.0%  d2.0 |  -15.9%   +3.7%
+    HPG   2025-07-08     25     22     30    +4.2 |  HOLD   +5.3%    d7 |  HOLD   +6.7% d14.0 |  HOLD  +14.0% d30.0 |   -0.6%  +17.8%
+    HPG   2025-07-10     25     23     30    +0.2 |  HOLD   +4.2%    d7 |  HOLD   +1.0% d14.0 |  HOLD   +8.9% d30.0 |   -1.6%  +15.7%
+    HPG   2025-08-06     27     24     33    +0.2 |  HOLD   +3.3%    d7 |  HOLD   +0.4% d14.0 |  HOLD   +7.9% d30.0 |   -4.6%  +13.8%
+    HPG   2025-09-04     30     27     36    +2.6 |  HOLD   +1.7%    d7 |  HOLD   -2.7% d14.0 |  HOLD   -5.4% d30.0 |   -8.4%   +3.4%
+    HPG   2025-09-15     30     27     36    +0.8 |  HOLD   -4.3%    d7 |  HOLD   -8.9% d14.0 |    SL  -10.0% d25.0 |  -14.3%   +0.7%
+    PHR   2025-05-27     48     43     58    +1.2 |  HOLD   +2.6%    d7 |  HOLD   +4.9% d14.0 |    TP  +20.0% d19.0 |   -0.6%  +31.6%
+    PHR   2025-05-29     51     46     61    +3.8 |  HOLD   -2.9%    d7 |  HOLD   -1.3% d14.0 |    TP  +20.0% d24.0 |   -6.5%  +23.9%
+    PHR   2025-06-19     54     49     65    +2.4 |  HOLD  +10.3%    d7 |  HOLD  +11.2% d14.0 |  HOLD  +15.7% d30.0 |   -0.5%  +19.0%
+    PHR   2025-07-02     62     56     75    +2.7 |  HOLD   -4.4%    d7 |  HOLD   -3.3% d14.0 |  HOLD   +0.3% d30.0 |   -6.8%   +3.4%
+    PHR   2025-12-03     58     52     70    +0.2 |  HOLD   -6.0%    d7 |  HOLD   -2.2% d14.0 |  HOLD  +13.8% d30.0 |   -6.4%  +19.8%
+    PHR   2026-01-09     62     56     75    +1.1 |  HOLD   +5.8%    d7 |  HOLD   -0.6% d14.0 |  HOLD   +1.1% d30.0 |   -8.3%  +11.5%
+    PHR   2026-01-15     68     61     81    +2.1 |    SL  -10.0%    d7 |    SL  -10.0%  d7.0 |    SL  -10.0%  d7.0 |  -15.8%   +2.9%
+    PHR   2026-03-03     69     62     83    +0.4 |    SL  -10.0%    d2 |    SL  -10.0%  d2.0 |    SL  -10.0%  d2.0 |  -18.0%   +1.3%
+    PLX   2025-12-08     36     32     43    +2.0 |  HOLD   -3.9%    d7 |  HOLD   -1.4% d14.0 |    TP  +20.0% d21.0 |   -7.6%  +68.1%
+    PLX   2025-12-29     36     33     44    +0.6 |    TP  +20.0%    d6 |    TP  +20.0%  d6.0 |    TP  +20.0%  d6.0 |   -3.3%  +77.5%
+    PLX   2026-01-06     39     35     46    +4.7 |    TP  +20.0%    d6 |    TP  +20.0%  d6.0 |    TP  +20.0%  d6.0 |   +0.0%  +67.2%
+    PLX   2026-01-14     48     44     58    +6.5 |    TP  +20.0%    d4 |    TP  +20.0%  d4.0 |    TP  +20.0%  d4.0 |   -3.1%  +45.2%
+    PLX   2026-03-03     66     59     79    +2.0 |    SL  -10.0%    d4 |    SL  -10.0%  d4.0 |    SL  -10.0%  d4.0 |  -22.2%   +6.5%
+    PVC   2025-12-29     12     11     14    +1.7 |  HOLD   +9.4%    d7 |    TP  +20.0% d10.0 |    TP  +20.0% d10.0 |   -4.3%  +43.6%
+    PVC   2026-01-06     12     11     15    +2.5 |    TP  +20.0%    d7 |    TP  +20.0%  d7.0 |    TP  +20.0%  d7.0 |   -3.3%  +36.6%
+    PVC   2026-01-14     15     13     18    +8.1 |    SL  -10.0%    d7 |    SL  -10.0%  d7.0 |    SL  -10.0%  d7.0 |  -14.3%  +51.7%
+    PVC   2026-02-02     16     14     19    +0.6 |    SL  -10.0%    d4 |    SL  -10.0%  d4.0 |    SL  -10.0%  d4.0 |  -20.3%  +45.6%
+    PVC   2026-02-27     17     15     20    +1.2 |    TP  +20.0%    d2 |    TP  +20.0%  d2.0 |    TP  +20.0%  d2.0 |   -5.9%  +35.3%
+    STB   2025-12-22     52     47     63    +1.7 |  HOLD  +10.7%    d7 |  HOLD   +3.2% d14.0 |    TP  +20.0% d21.0 |   -2.5%  +26.7%
+    STB   2025-12-29     60     54     72    +1.9 |    SL  -10.0%    d5 |    SL  -10.0%  d5.0 |    SL  -10.0%  d5.0 |  -14.7%  +10.9%
+    STB   2026-01-21     62     56     75    +2.0 |  HOLD   +1.4%    d7 |  HOLD   -4.2% d14.0 |  HOLD   +6.8% d30.0 |   -5.0%  +13.0%
+    STB   2026-02-25     67     60     80    +0.5 |  HOLD   -4.3%    d7 |    SL  -10.0%  d8.0 |    SL  -10.0%  d8.0 |  -10.9%   +5.2%
+    VHC   2026-01-13     59     53     70    +0.7 |  HOLD   +3.8%    d7 |  HOLD  +18.1% d14.0 |  HOLD   +7.2% d30.0 |   -1.0%  +19.3%
+    VHC   2026-01-19     63     57     76    +3.4 |  HOLD   -3.2%    d7 |  HOLD   -4.8% d14.0 |    SL  -10.0% d30.0 |  -12.5%  +11.0%
+    VHC   2026-01-29     65     58     78    +1.9 |  HOLD   -7.7%    d7 |    SL  -10.0%  d8.0 |    SL  -10.0%  d8.0 |  -15.2%   +7.5%
+    VHC   2026-02-02     69     62     83    +5.5 |    SL  -10.0%    d4 |    SL  -10.0%  d4.0 |    SL  -10.0%  d4.0 |  -20.4%   +1.0%
+
+  12b. OUTCOME SUMMARY BY HORIZON (all Darvas breakouts, n=75)
+
+    T+7 (75 trades):
+      SL hit (-10%):   12 ( 16.0%)
+      TP hit (+20%):   11 ( 14.7%)
+      HOLD to T+7:   52 ( 69.3%) | of which win: 33/52
+      Avg return:     +3.35%
+      SL avg hit day: d4.5 | median d4
+      TP avg hit day: d5.2 | median d6
+
+    T+14 (71 trades):
+      SL hit (-10%):   15 ( 21.1%)
+      TP hit (+20%):   21 ( 29.6%)
+      HOLD to T+14:   35 ( 49.3%) | of which win: 18/35
+      Avg return:     +4.64%
+      SL avg hit day: d5.5 | median d5
+      TP avg hit day: d7.7 | median d7
+
+    T+30 (71 trades):
+      SL hit (-10%):   21 ( 29.6%)
+      TP hit (+20%):   32 ( 45.1%)
+      HOLD to T+30:   18 ( 25.4%) | of which win: 14/18
+      Avg return:     +7.50%
+      SL avg hit day: d10.5 | median d7
+      TP avg hit day: d13.2 | median d10
+
+  12c. SL SENSITIVITY (TP fixed at +20%, T+30 horizon)
+       SL Trades   SL Hit   TP Hit     Hold  Avg Ret   Win%
+    ------------------------------------------------------------
+      -5%     72  36(  50%)  25(  35%)  11(  15%)   +5.77% 35/72
+      -7%     72  29(  40%)  29(  40%)  14(  19%)   +6.73% 41/72
+      -8%     72  28(  39%)  30(  42%)  14(  19%)   +6.71% 42/72
+     -10%     71  21(  30%)  32(  45%)  18(  25%)   +7.50% 46/71
+     -12%     70  16(  23%)  34(  49%)  20(  29%)   +8.25% 48/70
+     -15%     70  10(  14%)  35(  50%)  25(  36%)   +8.50% 50/70
+
+  12d. COMBO TRADE SIMULATION (SL=-10.0%, TP=20.0%, T+30 horizon)
+
+    Combo                                T+7:  SL  TP HOLD    AvgR  T+14:  SL  TP HOLD    AvgR  T+30:  SL  TP HOLD    AvgR
+    ------------------------------------------------------------------------------------------------------------------------
+    All Darvas BO                        T+7:  12  11   52   +3.4%  T+14:  15  21   35   +4.6%  T+30:  21  32   18   +7.5%
+    BO + Vol + EMA                       T+7:   9  10   35   +3.9%  T+14:  12  18   21   +6.1%  T+30:  15  25   11   +8.2%
+    BO+Vol+EMA+Chase≤3%                  T+7:   6   7   22   +3.9%  T+14:   9  11   15   +5.6%  T+30:   9  17    9   +8.8%
+    BO+Vol+EMA+RSI14<70                  T+7:   2   3   14   +4.7%  T+14:   5   5    9   +5.4%  T+30:   5   9    5   +8.6%
+    BO+Vol+EMA+RSI+Stop≤8%               T+7:   0   0    5   +2.3%  T+14:   0   0    4   +3.7%  T+30:   0   3    1  +18.4%
+    Full BTL (current)                   T+7:   0   1    6   +4.2%  T+14:   0   1    5   +5.6%  T+30:   0   4    2  +17.8%
+
+==================================================================================================================================
+PART 13: DRAWDOWN ANALYSIS BY HORIZON (max intraday pain from entry)
+==================================================================================================================================
+
+  T+7 (n=75):
+    Max Drawdown:  Mean -5.09% | Med -3.61% | Worst -22.24%
+    Max Gain:      Mean +10.44% | Med +7.38% | Best +35.29%
+    DD > -5%:  31/75 (41%)
+    DD > -10%: 12/75 (16%)
+    Gain > +10%: 33/75 (44%)
+    Gain > +20%: 11/75 (15%)
+
+  T+14 (n=75):
+    Max Drawdown:  Mean -5.71% | Med -4.53% | Worst -22.24%
+    Max Gain:      Mean +15.39% | Med +10.95% | Best +62.74%
+    DD > -5%:  33/75 (44%)
+    DD > -10%: 15/75 (20%)
+    Gain > +10%: 40/75 (53%)
+    Gain > +20%: 21/75 (28%)
+
+  T+30 (n=75):
+    Max Drawdown:  Mean -6.96% | Med -4.99% | Worst -23.66%
+    Max Gain:      Mean +24.19% | Med +19.83% | Best +77.53%
+    DD > -5%:  37/75 (49%)
+    DD > -10%: 21/75 (28%)
+    Gain > +10%: 57/75 (76%)
+    Gain > +20%: 36/75 (48%)
+
+==================================================================================================================================
+PART 14: ANALYSIS CONCLUSIONS & RECOMMENDATIONS
+==================================================================================================================================
+
+  Dataset: 12 stocks, 1201 total bar-days
+  Full BTL signals (current logic): 7
+  Darvas breakouts (any): 75
+  
+  KEY METRICS:
+  - Full BTL T+2: Win 3/7 (43%) | Avg +1.07%
+  - Full BTL T+7: Win 4/7 (57%) | Avg +3.88%
+  - Full BTL T+14: Win 3/6 (50%) | Avg +12.55%
+  - Full BTL T+30: Win 6/6 (100%) | Avg +28.96%
+  - All BO T+2: Win 41/75 (55%) | Avg +1.43%
+  - All BO T+7: Win 43/72 (60%) | Avg +3.57%
+  - All BO T+14: Win 40/64 (62%) | Avg +8.64%
+  - All BO T+30: Win 43/57 (75%) | Avg +14.51%
+
+  TRADE SIMULATION (SL=-10.0%, TP=20.0%):
+  - See Part 12b for outcome breakdown per horizon
+  - See Part 12c for SL sensitivity analysis
+  - See Part 12d for combo simulation results
+  
+  OPTIMIZATION SUGGESTIONS:
+  1. Chase filter: Do NOT buy if close > Darvas High + 3.0%
+  2. Check Part 6 for optimal parameter thresholds
+  3. Check Part 9 for best condition combinations across ALL horizons
+  4. Part 12 shows realistic SL/TP path outcomes
+  5. Feature correlations (Part 7a) indicate which factors matter most
+
+==================================================================================================================================
+ANALYSIS COMPLETE
+==================================================================================================================================
+========================================================================================================================
+VERIFICATION: Full BTL vs BO+Vol+EMA+RSI+Stop<=8%
+========================================================================================================================
+
+  Fetching EVF... 314 bars [2024-12-02 → 2026-03-11]
+
+  Fetching GSP... 314 bars [2024-12-02 → 2026-03-11]
+
+  Fetching PVC... 324 bars [2024-11-18 → 2026-03-11]
+
+  Fetching STB... 324 bars [2024-11-18 → 2026-03-11]
+
+  Fetching G36... 486 bars [2024-03-27 → 2026-03-11]
+
+  Fetching PLX... 338 bars [2024-10-29 → 2026-03-11]
+
+  Fetching DPM... 464 bars [2024-05-02 → 2026-03-11]
+
+  Fetching PHR... 469 bars [2024-04-22 → 2026-03-11]
+
+  Fetching DGW... 475 bars [2024-04-11 → 2026-03-11]
+
+  Fetching VHC... 323 bars [2024-11-19 → 2026-03-11]
+
+  Fetching HPG... 373 bars [2024-05-15 → 2025-11-06]
+
+  Fetching BFC... 314 bars [2024-12-02 → 2026-03-11]
+
+Total rows: 1201
+
+========================================================================================================================
+Combo A: Full BTL (buy_signal) = 7 signals
+Combo B: BO+Vol+EMA+RSI+Stop<=8% = 5 signals
+========================================================================================================================
+
+CONDITION COMPARISON:
+Condition                             Full BTL    BO+Vol+EMA+RSI+Stp8
+----------------------------------------------------------------------
+darvas_breakout (BO)                       YES                    YES
+darvas_vol_confirm                         YES                    YES
+ema_above (EMA12>EMA36)                    YES                    YES
+was_oversold (RSI wk<30)                   YES                    YES
+stop_pct <= X%                          <= 10%                  <= 8%
+rr_ratio >= 2                              YES          NO (implicit)
+valid_darvas (width 3-15%)                 YES                     NO
+is_btl (below the line)                    YES                     NO
+market_ok (not Stage4)                     YES                     NO
+var edge detection on BTL                  YES                     NO
+
+
+========================================================================================================================
+ALL SIGNALS - SIDE BY SIDE
+========================================================================================================================
+
+    Sym         Date  Close  Stage  DrvW  Stp%   RR  BTL?  Chase | InA InB |     T+2     T+7    T+14    T+30 | Note
+  ----------------------------------------------------------------------------------------------------------------------------------
+    DPM   2025-06-10     19   S1→2   5.0   5.4  3.7   BTL   +0.7 |   A   B |   +0.7%  +11.0%  +10.5%  +20.6% | BOTH
+    DPM   2025-06-13     20     S2   7.7   7.5  2.7   BTL   +0.3 |   A   B |   +7.7%   +7.0%   +8.1%  +20.7% | BOTH
+    GSP   2026-01-15     11     S1   9.7   9.6  2.1   BTL   +0.9 |   A     |   -1.8%   -2.2%   -1.3%  +13.2% | stop=9.6%>8%
+    GSP   2026-02-27     12     S3   4.1   6.8  2.9   BTL   +3.1 |   A   B |   +8.1%   +3.4%     n/a     n/a | BOTH
+    PHR   2025-12-03     58     S2   7.2   6.9  2.9   BTL   +0.2 |   A   B |   +0.0%   -6.0%   -2.2%  +13.8% | BOTH
+    PLX   2025-12-08     36   S1→2   5.7   7.2  2.8   BTL   +2.0 |   A   B |   -4.0%   -3.9%   -1.4%  +63.9% | BOTH
+    PLX   2025-12-29     36   S1→2   9.0   8.8  2.3   BTL   +0.6 |   A     |   -3.3%  +17.8%  +61.6%  +41.6% | stop=8.8%>8%
+
+========================================================================================================================
+RETURN VERIFICATION
+========================================================================================================================
+
+  Full BTL (7 signals):
+    T+2: n=7 | Win 3/7 (43%) | Avg +1.07% | Med +0.00% | Min -4.02% | Max +8.09%
+           Values: -1.8%, +8.1%, -4.0%, -3.3%, +0.7%, +7.7%, +0.0%
+    T+7: n=7 | Win 4/7 (57%) | Avg +3.88% | Med +3.40% | Min -6.03% | Max +17.81%
+           Values: -2.2%, +3.4%, -3.9%, +17.8%, +11.0%, +7.0%, -6.0%
+    T+14: n=6 | Win 3/6 (50%) | Avg +12.55% | Med +3.40% | Min -2.24% | Max +61.64%
+           Values: -1.3%, -1.4%, +61.6%, +10.5%, +8.1%, -2.2%
+    T+30: n=6 | Win 6/6 (100%) | Avg +28.96% | Med +20.63% | Min +13.16% | Max +63.94%
+           Values: +13.2%, +63.9%, +41.6%, +20.6%, +20.7%, +13.8%
+
+  BO+Vol+EMA+RSI+Stp8 (5 signals):
+    T+2: n=5 | Win 3/5 (60%) | Avg +2.50% | Med +0.73% | Min -4.02% | Max +8.09%
+           Values: +8.1%, -4.0%, +0.7%, +7.7%, +0.0%
+    T+7: n=5 | Win 3/5 (60%) | Avg +2.31% | Med +3.40% | Min -6.03% | Max +11.05%
+           Values: +3.4%, -3.9%, +11.0%, +7.0%, -6.0%
+    T+14: n=4 | Win 2/4 (50%) | Avg +3.74% | Med +3.37% | Min -2.24% | Max +10.48%
+           Values: -1.4%, +10.5%, +8.1%, -2.2%
+    T+30: n=4 | Win 4/4 (100%) | Avg +29.75% | Med +20.63% | Min +13.79% | Max +63.94%
+           Values: +63.9%, +20.6%, +20.7%, +13.8%
+
+========================================================================================================================
+OVERLAP ANALYSIS
+========================================================================================================================
+
+  In BOTH A and B:    5 signals
+  Only in A (Full BTL): 2 signals
+  Only in B (BO+combo): 0 signals
+
+  Signals ONLY in Full BTL (not in B):
+    GSP 2026-01-15 | stop=9.6% | Reason: stop>8% so excluded from B
+    PLX 2025-12-29 | stop=8.8% | Reason: stop>8% so excluded from B
+
+========================================================================================================================
+SL/TP TRADE SIMULATION VERIFICATION (SL=-10%, TP=+20%)
+========================================================================================================================
+
+  Full BTL:
+      Sym         Date  Entry    SL@    TP@ |           T7 |          T14 |          T30
+    --------------------------------------------------------------------------------
+      DPM   2025-06-10     19     17     23 | HOLD +11.0% d7 | HOLD +10.5% d14 |   TP +20.0% d30
+      DPM   2025-06-13     20     18     24 | HOLD +7.0% d7 | HOLD +8.1% d14 |   TP +20.0% d28
+      GSP   2026-01-15     11     10     14 | HOLD -2.2% d7 | HOLD -1.3% d14 | HOLD +13.2% d30
+      GSP   2026-02-27     12     11     14 | HOLD +3.4% d7 |  N/A    -    - |  N/A    -    -
+      PHR   2025-12-03     58     52     70 | HOLD -6.0% d7 | HOLD -2.2% d14 | HOLD +13.8% d30
+      PLX   2025-12-08     36     32     43 | HOLD -3.9% d7 | HOLD -1.4% d14 |   TP +20.0% d21
+      PLX   2025-12-29     36     33     44 |   TP +20.0% d6 |   TP +20.0% d6 |   TP +20.0% d6
+    T+30 Summary: SL=0 TP=4 HOLD=2 | Avg=+17.83%
+
+  BO+Vol+EMA+RSI+Stp8:
+      Sym         Date  Entry    SL@    TP@ |           T7 |          T14 |          T30
+    --------------------------------------------------------------------------------
+      DPM   2025-06-10     19     17     23 | HOLD +11.0% d7 | HOLD +10.5% d14 |   TP +20.0% d30
+      DPM   2025-06-13     20     18     24 | HOLD +7.0% d7 | HOLD +8.1% d14 |   TP +20.0% d28
+      GSP   2026-02-27     12     11     14 | HOLD +3.4% d7 |  N/A    -    - |  N/A    -    -
+      PHR   2025-12-03     58     52     70 | HOLD -6.0% d7 | HOLD -2.2% d14 | HOLD +13.8% d30
+      PLX   2025-12-08     36     32     43 | HOLD -3.9% d7 | HOLD -1.4% d14 |   TP +20.0% d21
+    T+30 Summary: SL=0 TP=3 HOLD=1 | Avg=+18.45%
+
+========================================================================================================================
+VERIFICATION COMPLETE
+========================================================================================================================

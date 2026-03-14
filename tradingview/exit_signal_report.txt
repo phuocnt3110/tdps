@@ -1,0 +1,331 @@
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  EXIT SIGNAL PREDICTION — Multi-dimensional Analysis
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  Date: 2026-03-14 15:31
+  Data: 730 days lookback, 60 bars forward tracking
+
+  Trades: 34 | Symbols: 32 | BAF, BIC, BIG, BSR, CTD, CTG, DCL, DGW, DPM, FIT, G36, GMD, HPG, MSR, MWG, NAF, NDN, OIL, PAC, PHR, PLX, PNJ, POW, PSX, PVB, PVC, PVD, PVS, STB, SZC, TTF, VHC
+  Fetch range: 2023-12-31 → 2026-07-02
+
+  Fetching VNINDEX... OK (544 bars)
+  Fetching BAF... OK (544 bars, RS range: 0-100)
+  Fetching BIC... OK (544 bars, RS range: 0-100)
+  Fetching BIG... OK (544 bars, RS range: 0-100)
+  Fetching BSR... OK (536 bars, RS range: 0-100)
+  Fetching CTD... OK (544 bars, RS range: 0-100)
+  Fetching CTG... OK (544 bars, RS range: 0-100)
+  Fetching DCL... OK (544 bars, RS range: 0-100)
+  Fetching DGW... OK (544 bars, RS range: 0-100)
+  Fetching DPM... OK (544 bars, RS range: 0-100)
+  Fetching FIT... OK (544 bars, RS range: 0-100)
+  Fetching G36... OK (544 bars, RS range: 0-100)
+  Fetching GMD... OK (544 bars, RS range: 0-100)
+  Fetching HPG... OK (544 bars, RS range: 0-100)
+  Fetching MSR... OK (544 bars, RS range: 0-100)
+  Fetching MWG... OK (544 bars, RS range: 0-100)
+  Fetching NAF... OK (544 bars, RS range: 0-100)
+  Fetching NDN... OK (544 bars, RS range: 0-100)
+  Fetching OIL... OK (544 bars, RS range: 0-100)
+  Fetching PAC... OK (544 bars, RS range: 0-67)
+  Fetching PHR... OK (544 bars, RS range: 0-100)
+  Fetching PLX... OK (544 bars, RS range: 0-100)
+  Fetching PNJ... OK (544 bars, RS range: 0-100)
+  Fetching POW... OK (544 bars, RS range: 0-100)
+  Fetching PSX...   ERR PSX: RetryError[<Future at 0x1407d2fe1e0 state=finished raised ValueError>]
+SKIP (0 bars)
+  Fetching PVB... OK (544 bars, RS range: 0-100)
+  Fetching PVC... OK (544 bars, RS range: 0-100)
+  Fetching PVD... OK (544 bars, RS range: 0-100)
+  Fetching PVS... OK (544 bars, RS range: 0-100)
+  Fetching STB... OK (544 bars, RS range: 0-100)
+  Fetching SZC... OK (544 bars, RS range: 0-100)
+  Fetching TTF... OK (544 bars, RS range: 0-100)
+  Fetching VHC... OK (544 bars, RS range: 0-100)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  FORWARD TRACKING (60 bars per trade)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  OVERALL EXIT SIGNAL STATISTICS (all 34 trades)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  Signal           Fire% #Fire  AvgDay  Accur%  DD@Fire  AvoidDD  Score
+  ────────────────────────────────────────────────────────────────────────────────────────────────────
+  vni_dist5         100%    33    1.3d   63.6%   -3.70%  -11.29%   83.5
+  lowerHigh         100%    33    2.0d   63.6%   -3.59%  -11.50%   82.5
+  lateBase           76%    25    4.1d   64.0%   -4.72%  -11.17%   79.4
+  churning           27%     9    4.9d   55.6%   -5.02%   -9.74%   74.1
+  breakATR          100%    33    6.1d   63.6%   -5.38%   -9.07%   73.6
+  breakMA10         100%    33    6.2d   63.6%   -6.35%   -8.30%   71.0
+  lowerLow          100%    33    6.7d   63.6%   -7.25%   -7.14%   66.8
+  vni_breakMA50     100%    33   10.3d   63.6%   -6.95%   -7.90%   63.6
+  breakMA20          91%    30   11.4d   66.7%   -7.80%   -6.99%   60.6
+  vni_dist8          88%    29   11.4d   58.6%   -6.53%   -7.39%   58.4
+  rsDiverg           73%    24   11.8d   58.3%   -5.98%   -6.89%   56.3
+  breakMA50          67%    22   14.7d   72.7%   -9.79%   -6.12%   55.4
+  failedBO           24%     8   11.4d   50.0%   -3.66%   -6.76%   53.2
+  sector_weak        33%    11   15.0d   63.6%   -7.64%   -6.41%   52.2
+  volClimax          15%     5   18.0d   80.0%   -8.46%   -4.86%   49.6
+  climaxTop           9%     3   11.0d   33.3%   -5.28%   -0.61%   28.7
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  ATL ZONE (16 trades)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  Signal           Fire% #Fire  AvgDay  Accur%  DD@Fire  AvoidDD  Score
+  ────────────────────────────────────────────────────────────────────────────────────────────────────
+  volClimax           6%     1    1.0d  100.0%   -6.95%  -16.01%   98.5
+  vni_dist5         100%    16    1.1d   50.0%   -3.47%  -12.94%   78.4
+  lateBase           94%    15    2.7d   53.3%   -3.58%  -12.94%   77.3
+  lowerHigh         100%    16    2.6d   50.0%   -3.67%  -12.63%   76.2
+  churning           31%     5    7.4d   60.0%   -7.24%  -10.82%   72.9
+  breakMA10         100%    16    7.8d   50.0%   -7.06%   -8.75%   64.6
+  breakATR          100%    16    8.2d   50.0%   -5.93%   -9.01%   64.6
+  failedBO           38%     6    8.8d   50.0%   -3.73%   -9.02%   63.8
+  lowerLow          100%    16    8.1d   50.0%   -7.62%   -7.61%   60.7
+  vni_breakMA50     100%    16   11.2d   50.0%   -7.84%   -7.92%   56.9
+  breakMA20          81%    13   13.4d   53.8%   -8.72%   -7.74%   54.7
+  breakMA50          50%     8   18.5d   62.5%  -10.62%   -6.37%   46.3
+  vni_dist8          81%    13   13.2d   38.5%   -7.03%   -6.16%   44.0
+  sector_weak        25%     4   13.0d   25.0%   -7.86%   -7.32%   42.5
+  rsDiverg           56%     9   11.6d   33.3%   -3.67%   -5.33%   42.0
+  climaxTop           6%     1    2.0d    0.0%    0.00%    0.00%   27.0
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  BTL ZONE (18 trades)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  Signal           Fire% #Fire  AvgDay  Accur%  DD@Fire  AvoidDD  Score
+  ────────────────────────────────────────────────────────────────────────────────────────────────────
+  lowerHigh         100%    17    1.4d   76.5%   -3.51%  -10.80%   88.5
+  vni_dist5         100%    17    1.5d   76.5%   -3.91%  -10.27%   88.3
+  breakATR          100%    17    4.0d   76.5%   -4.85%   -9.11%   81.9
+  lateBase           59%    10    6.3d   80.0%   -6.43%   -9.40%   80.8
+  breakMA10         100%    17    4.8d   76.5%   -5.68%   -8.03%   77.5
+  lowerLow          100%    17    5.5d   76.5%   -6.91%   -6.84%   72.9
+  churning           24%     4    1.8d   50.0%   -2.26%   -8.12%   71.7
+  vni_breakMA50     100%    17    9.5d   76.5%   -6.11%   -7.88%   70.0
+  vni_dist8          94%    16   10.0d   75.0%   -6.12%   -7.90%   68.7
+  breakMA20         100%    17    9.8d   76.5%   -7.10%   -6.59%   65.6
+  rsDiverg           88%    15   12.0d   73.3%   -7.36%   -7.32%   63.3
+  breakMA50          82%    14   12.5d   78.6%   -9.31%   -6.01%   60.7
+  sector_weak        41%     7   16.1d   85.7%   -7.51%   -6.25%   58.8
+  volClimax          24%     4   22.2d   75.0%   -8.83%   -1.15%   33.4
+  climaxTop          12%     2   15.5d   50.0%   -7.92%   -0.61%   28.6
+  failedBO           12%     2   19.0d   50.0%   -3.45%    0.00%   21.5
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  BEST 2-SIGNAL COMBOS (both fire within 10 days → exit)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  Combo                               #Trades  LoseRate  AvgDay
+  ────────────────────────────────────────────────────────────────────────────────────────────────────
+  breakMA50+lateBase                   6      100%    1.0d
+  breakMA50+vni_dist5                  9      100%    1.0d
+  breakMA50+lowerHigh                  9      100%    1.4d
+  breakMA50+vni_breakMA50              7      100%    2.0d
+  breakMA50+vni_dist8                  5      100%    2.2d
+  breakMA50+breakATR                   9      100%    2.4d
+  breakMA10+breakMA50                  9      100%    3.0d
+  breakMA20+breakMA50                  9      100%    3.4d
+  breakMA50+lowerLow                   9      100%    3.4d
+  breakMA20+vni_dist5                 18       78%    1.2d
+  breakATR+lateBase                  18       78%    1.4d
+  breakMA10+lateBase                  18       78%    1.6d
+  breakMA20+lowerHigh                 18       78%    1.8d
+  breakMA20+breakATR                  18       78%    3.4d
+  breakMA10+breakMA20                 18       78%    3.8d
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  DRAWDOWN PROBABILITY BY DAY (P(DD > threshold) at day N)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+   Day    DD>-3%    DD>-5%    DD>-7%   DD>-10%   DD>-15%     AvgDD
+  ────────────────────────────────────────────────────────────────────────────────────────────────────
+  d  1       52%       24%        6%        3%        0%     -3.3%
+  d  2       61%       33%       15%        3%        3%     -4.2%
+  d  3       64%       45%       15%       15%        6%     -5.2%
+  d  5       73%       55%       27%       21%        9%     -6.7%
+  d  7       82%       67%       42%       30%       12%     -8.2%
+  d 10       86%       69%       55%       21%        3%     -7.5%
+  d 14       86%       69%       55%       24%       14%     -8.2%
+  d 20       86%       71%       61%       39%       11%     -9.3%
+  d 30       81%       69%       56%       38%       12%     -8.9%
+
+  ATL zone (16 trades):
+    d 1: P(DD>5%)=25%  P(DD>10%)=6%  AvgDD=-3.3%
+    d 3: P(DD>5%)=31%  P(DD>10%)=19%  AvgDD=-5.0%
+    d 5: P(DD>5%)=38%  P(DD>10%)=19%  AvgDD=-6.6%
+    d 7: P(DD>5%)=56%  P(DD>10%)=31%  AvgDD=-8.7%
+    d10: P(DD>5%)=62%  P(DD>10%)=15%  AvgDD=-7.6%
+    d14: P(DD>5%)=62%  P(DD>10%)=23%  AvgDD=-8.4%
+    d20: P(DD>5%)=58%  P(DD>10%)=33%  AvgDD=-8.1%
+
+  BTL zone (17 trades):
+    d 1: P(DD>5%)=24%  P(DD>10%)=0%  AvgDD=-3.3%
+    d 3: P(DD>5%)=59%  P(DD>10%)=12%  AvgDD=-5.4%
+    d 5: P(DD>5%)=71%  P(DD>10%)=24%  AvgDD=-6.8%
+    d 7: P(DD>5%)=76%  P(DD>10%)=29%  AvgDD=-7.6%
+    d10: P(DD>5%)=75%  P(DD>10%)=25%  AvgDD=-7.4%
+    d14: P(DD>5%)=75%  P(DD>10%)=25%  AvgDD=-8.0%
+    d20: P(DD>5%)=81%  P(DD>10%)=44%  AvgDD=-10.2%
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  DETAILED TRADE TIMELINES
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  MSR_2026_03 (MSR) ATL ✗LOSE PnL=-15.1%  MxGain=+13.1% @d8  MxDD=-19.8% @d4
+    Timeline: d1:lowerHigh(-11.9%) → d1:lateBase(-11.9%) → d1:vni_dist5(-11.9%) → d2:breakATR(-15.3%) → d2:vni_breakMA50(-15.3%) → d4:breakMA10(-19.8%) → d4:lowerLow(-19.8%)
+    DD curve: d1:-11.9% d3:-15.3% d5:-19.8% d7:-19.8% 
+
+  DGW_2026_02 (DGW) BTL ✗LOSE PnL=-11.5%  MxGain=+3.4% @d1  MxDD=-28.6% @d19
+    Timeline: d1:lateBase(-4.5%) → d1:vni_dist5(-4.5%) → d2:lowerHigh(-6.2%) → d2:vni_dist8(-6.2%) → d2:vni_breakMA50(-6.2%) → d3:breakATR(-7.0%) → d4:breakMA10(-13.3%) → d4:lowerLow(-13.3%) ... (+4 more)
+    DD curve: d1:-4.5% d3:-7.0% d5:-14.6% d7:-14.6% d10:-14.6% d14:-18.8% d20:-28.6% 
+
+  POW_2026_03 (POW) ATL ✗LOSE PnL=-9.8%  MxGain=+1.8% @d1  MxDD=-23.0% @d5
+    Timeline: d1:failedBO(-7.0%) → d1:volClimax(-7.0%) → d1:lateBase(-7.0%) → d1:vni_dist5(-7.0%) → d2:lowerHigh(-9.4%) → d2:breakATR(-9.4%) → d2:vni_breakMA50(-9.4%) → d3:breakMA10(-12.4%) ... (+4 more)
+    DD curve: d1:-7.0% d3:-12.4% d5:-23.0% d7:-23.0% 
+
+  OIL_2026_03 (OIL) ATL ✗LOSE PnL=-9.3%  MxGain=+10.6% @d3  MxDD=-22.5% @d7
+    Timeline: d1:lowerHigh(-8.1%) → d1:lateBase(-8.1%) → d1:vni_dist5(-8.1%) → d1:vni_breakMA50(-8.1%) → d4:breakMA10(-17.4%) → d4:breakATR(-17.4%) → d5:lowerLow(-19.5%) → d7:breakMA20(-22.5%)
+    DD curve: d1:-8.1% d3:-17.4% d5:-19.5% d7:-22.5% 
+
+  PAC_2026_03 (PAC) BTL ✗LOSE PnL=-9.3%  MxGain=+4.7% @d7  MxDD=-13.7% @d3
+    Timeline: d1:lowerHigh(-6.1%) → d1:breakATR(-6.1%) → d1:lateBase(-6.1%) → d1:vni_dist5(-6.1%) → d1:vni_breakMA50(-6.1%) → d2:breakMA10(-10.0%) → d3:breakMA20(-13.7%) → d3:breakMA50(-13.7%) ... (+1 more)
+    DD curve: d1:-6.1% d3:-13.7% d5:-13.7% d7:-13.7% 
+
+  CTG_2026_01 (CTG) ATL ✗LOSE PnL=-8.1%  MxGain=+4.2% @d2  MxDD=-20.0% @d35
+    Timeline: d1:lowerHigh(-3.6%) → d1:lateBase(-3.6%) → d1:vni_dist5(-3.6%) → d3:breakATR(-4.6%) → d4:churning(-4.8%) → d6:breakMA10(-4.8%) → d7:lowerLow(-6.0%) → d10:breakMA20(-8.3%) ... (+3 more)
+    DD curve: d1:-3.6% d3:-4.6% d5:-4.8% d7:-6.0% d10:-8.3% d14:-8.9% d20:-11.3% d30:-11.7% 
+
+  PVD_2026_01 (PVD) ATL ✗LOSE PnL=-8.0%  MxGain=+54.2% @d33  MxDD=-8.6% @d11
+    Timeline: d1:breakMA10(-5.6%) → d1:lowerHigh(-5.6%) → d1:lowerLow(-5.6%) → d1:breakATR(-5.6%) → d1:lateBase(-5.6%) → d1:vni_dist5(-5.6%) → d7:breakMA20(-5.6%) → d9:rsDiverg(-5.6%) ... (+3 more)
+    DD curve: d1:-5.6% d3:-5.6% d5:-5.6% d7:-5.6% d10:-7.5% d14:-8.6% d20:-8.6% d30:-8.6% 
+
+  STB_2025_12 (STB) BTL ✗LOSE PnL=-7.1%  MxGain=+17.0% @d38  MxDD=-14.8% @d7
+    Timeline: d1:lowerHigh(-3.3%) → d1:churning(-3.3%) → d1:sector_weak(-3.3%) → d2:rsDiverg(-6.7%) → d3:breakMA10(-6.7%) → d4:lowerLow(-12.0%) → d4:volClimax(-12.0%) → d4:breakATR(-12.0%) ... (+5 more)
+    DD curve: d1:-3.3% d3:-6.7% d5:-12.0% d7:-14.8% d10:-14.8% d14:-14.8% d20:-14.8% d30:-14.8% 
+
+  BAF_2026_01 (BAF) ATL ✗LOSE PnL=-6.2%  MxGain=+2.5% @d5  MxDD=-11.6% @d33
+    Timeline: d1:lateBase(-0.5%) → d1:vni_dist5(-0.5%) → d2:failedBO(-0.5%) → d4:lowerHigh(-0.5%) → d6:breakMA10(-1.2%) → d6:lowerLow(-1.2%) → d7:breakMA20(-2.6%) → d8:breakATR(-6.9%) ... (+4 more)
+    DD curve: d1:-0.5% d3:-0.5% d5:-0.5% d7:-2.6% d10:-8.3% d14:-8.3% d20:-8.3% d30:-8.3% 
+
+  CTD_2026_02 (CTD) BTL ✗LOSE PnL=-6.2%  MxGain=+7.5% @d11  MxDD=-10.3% @d17
+    Timeline: d1:lowerHigh(-4.7%) → d1:breakATR(-4.7%) → d1:vni_dist5(-4.7%) → d1:vni_dist8(-4.7%) → d1:vni_breakMA50(-4.7%) → d2:rsDiverg(-6.1%) → d3:breakMA10(-6.1%) → d14:lowerLow(-6.1%) ... (+3 more)
+    DD curve: d1:-4.7% d3:-6.1% d5:-6.1% d7:-6.1% d10:-6.1% d14:-6.1% d20:-10.3% 
+
+  HPG_2026_02 (HPG) BTL ✗LOSE PnL=-6.0%  MxGain=+7.8% @d9  MxDD=-8.0% @d17
+    Timeline: d1:breakMA10(-2.7%) → d1:breakMA20(-2.7%) → d1:lowerHigh(-2.7%) → d1:breakATR(-2.7%) → d1:lateBase(-2.7%) → d1:vni_dist5(-2.7%) → d1:vni_dist8(-2.7%) → d1:vni_breakMA50(-2.7%) ... (+3 more)
+    DD curve: d1:-2.7% d3:-4.2% d5:-4.2% d7:-4.2% d10:-4.2% d14:-4.2% d20:-8.0% 
+
+  NDN_2026_01 (NDN) BTL ✗LOSE PnL=-5.9%  MxGain=+0.0% @d0  MxDD=-19.5% @d27
+    Timeline: d1:breakMA10(-5.1%) → d1:breakMA20(-5.1%) → d1:breakMA50(-5.1%) → d1:lowerHigh(-5.1%) → d1:lowerLow(-5.1%) → d1:breakATR(-5.1%) → d1:lateBase(-5.1%) → d1:vni_dist5(-5.1%) ... (+3 more)
+    DD curve: d1:-5.1% d3:-6.8% d5:-6.8% d7:-6.8% d10:-7.6% d14:-8.5% d20:-8.5% d30:-19.5% 
+
+  SZC_2026_02 (SZC) BTL ✗LOSE PnL=-5.9%  MxGain=+0.0% @d0  MxDD=-23.9% @d18
+    Timeline: d1:lowerHigh(-5.2%) → d1:vni_dist5(-5.2%) → d1:vni_dist8(-5.2%) → d1:vni_breakMA50(-5.2%) → d2:breakATR(-7.9%) → d3:breakMA10(-10.8%) → d3:lateBase(-10.8%) → d7:rsDiverg(-10.8%) ... (+3 more)
+    DD curve: d1:-5.2% d3:-10.8% d5:-10.8% d7:-10.8% d10:-10.8% d14:-15.4% d20:-23.9% 
+
+  DPM_2026_01 (DPM) BTL ✗LOSE PnL=-5.7%  MxGain=+47.3% @d36  MxDD=-6.0% @d7
+    Timeline: d1:lowerHigh(-1.2%) → d1:churning(-1.2%) → d1:breakATR(-1.2%) → d1:vni_dist5(-1.2%) → d6:breakMA10(-1.2%) → d7:breakMA20(-6.0%) → d7:breakMA50(-6.0%) → d7:lowerLow(-6.0%) ... (+5 more)
+    DD curve: d1:-1.2% d3:-1.2% d5:-1.2% d7:-6.0% d10:-6.0% d14:-6.0% d20:-6.0% d30:-6.0% 
+
+  DGW_2026_01 (DGW) BTL ✗LOSE PnL=-5.5%  MxGain=+25.5% @d13  MxDD=-13.3% @d31
+    Timeline: d2:lowerHigh(-2.4%) → d2:vni_dist5(-2.4%) → d3:breakATR(-2.9%) → d5:breakMA10(-5.8%) → d5:lowerLow(-5.8%) → d5:lateBase(-5.8%) → d14:vni_dist8(-6.5%) → d14:vni_breakMA50(-6.5%) ... (+4 more)
+    DD curve: d1:+0.1% d3:-2.9% d5:-5.8% d7:-6.5% d10:-6.5% d14:-6.5% d20:-6.5% d30:-9.8% 
+
+  MWG_2026_01 (MWG) ATL ✗LOSE PnL=-5.1%  MxGain=+1.6% @d2  MxDD=-17.1% @d21
+    Timeline: d1:lateBase(-2.6%) → d1:vni_dist5(-2.6%) → d3:lowerHigh(-2.6%) → d5:breakMA10(-7.4%) → d5:lowerLow(-7.4%) → d5:breakATR(-7.4%) → d5:vni_dist8(-7.4%) → d5:vni_breakMA50(-7.4%) ... (+4 more)
+    DD curve: d1:-2.6% d3:-2.6% d5:-7.4% d7:-7.4% d10:-7.4% d14:-7.4% d20:-12.1% 
+
+  PHR_2026_01 (PHR) BTL ✗LOSE PnL=-5.1%  MxGain=+5.9% @d28  MxDD=-14.2% @d32
+    Timeline: d1:vni_dist5(-0.8%) → d1:sector_weak(-0.8%) → d2:lowerHigh(-0.8%) → d3:breakMA10(-6.8%) → d3:lowerLow(-6.8%) → d3:breakATR(-6.8%) → d9:breakMA20(-7.4%) → d15:breakMA50(-10.9%) ... (+4 more)
+    DD curve: d1:-0.8% d3:-6.8% d5:-6.8% d7:-7.4% d10:-7.4% d14:-7.4% d20:-13.3% d30:-13.3% 
+
+  FIT_2026_01 (FIT) BTL ✗LOSE PnL=-5.1%  MxGain=+3.3% @d1  MxDD=-13.8% @d27
+    Timeline: d1:breakMA50(-3.5%) → d1:lowerHigh(-3.5%) → d1:breakATR(-3.5%) → d1:vni_dist5(-3.5%) → d3:breakMA10(-5.3%) → d3:breakMA20(-5.3%) → d3:lowerLow(-5.3%) → d10:vni_dist8(-7.1%) ... (+4 more)
+    DD curve: d1:-3.5% d3:-5.3% d5:-5.3% d7:-6.9% d10:-7.1% d14:-7.3% d20:-7.3% d30:-13.8% 
+
+  PVB_2026_01 (PVB) ATL ✗LOSE PnL=-5.0%  MxGain=+11.6% @d19  MxDD=-23.4% @d24
+    Timeline: d1:lowerHigh(-3.4%) → d1:lateBase(-3.4%) → d1:vni_dist5(-3.4%) → d6:breakMA10(-7.5%) → d6:breakMA20(-7.5%) → d6:lowerLow(-7.5%) → d6:breakATR(-7.5%) → d7:vni_dist8(-15.7%) ... (+3 more)
+    DD curve: d1:-3.4% d3:-5.9% d5:-5.9% d7:-15.7% d10:-16.8% d14:-16.8% d20:-16.8% 
+
+  TTF_2026_01 (TTF) BTL ✗LOSE PnL=-4.8%  MxGain=+3.3% @d7  MxDD=-16.4% @d28
+    Timeline: d1:breakMA10(-4.3%) → d1:breakMA20(-4.3%) → d1:breakMA50(-4.3%) → d1:lowerHigh(-4.3%) → d1:lowerLow(-4.3%) → d1:vni_dist5(-4.3%) → d3:breakATR(-4.3%) → d10:vni_dist8(-4.3%) ... (+2 more)
+    DD curve: d1:-4.3% d3:-4.3% d5:-4.3% d7:-4.3% d10:-4.3% d14:-4.3% d20:-4.3% d30:-16.4% 
+
+  GMD_2026_02 (GMD) BTL ✗LOSE PnL=-4.1%  MxGain=+22.1% @d13  MxDD=-6.3% @d4
+    Timeline: d1:lowerHigh(-3.0%) → d1:vni_dist5(-3.0%) → d2:vni_dist8(-4.2%) → d2:vni_breakMA50(-4.2%) → d4:lowerLow(-6.3%) → d7:sector_weak(-6.3%) → d14:breakATR(-6.3%) → d15:breakMA10(-6.3%) ... (+1 more)
+    DD curve: d1:-3.0% d3:-5.3% d5:-6.3% d7:-6.3% d10:-6.3% d14:-6.3% d20:-6.3% 
+
+  VHC_2026_01 (VHC) BTL ✓WIN PnL=+0.3%  MxGain=+8.0% @d2  MxDD=-14.8% @d21
+    Timeline: d1:lateBase(-0.9%) → d1:vni_dist5(-0.9%) → d2:failedBO(-0.9%) → d3:lowerHigh(-0.9%) → d4:breakMA10(-1.9%) → d4:churning(-1.9%) → d4:breakATR(-1.9%) → d5:breakMA20(-7.3%) ... (+5 more)
+    DD curve: d1:-0.9% d3:-0.9% d5:-7.3% d7:-10.1% d10:-10.1% d14:-10.1% d20:-10.7% 
+
+  NAF_2026_01 (NAF) ATL ✓WIN PnL=+0.5%  MxGain=+21.3% @d43  MxDD=-4.5% @d2
+    Timeline: d1:lowerHigh(-2.3%) → d1:lateBase(-2.3%) → d2:lowerLow(-4.5%) → d2:rsDiverg(-4.5%) → d2:vni_dist5(-4.5%) → d11:breakMA10(-4.5%) → d21:breakATR(-4.5%) → d23:vni_dist8(-4.5%) ... (+3 more)
+    DD curve: d1:-2.3% d3:-4.5% d5:-4.5% d7:-4.5% d10:-4.5% d14:-4.5% d20:-4.5% d30:-4.5% 
+
+  BSR_2026_01 (BSR) ATL ✓WIN PnL=+1.0%  MxGain=+102.0% @d35  MxDD=-0.5% @d1
+    Timeline: d1:vni_dist5(-0.5%) → d3:lowerHigh(-0.5%) → d4:churning(-0.5%) → d9:breakMA10(-0.5%) → d9:breakATR(-0.5%) → d19:vni_dist8(-0.5%) → d19:vni_breakMA50(-0.5%) → d21:lowerLow(-0.5%) ... (+2 more)
+    DD curve: d1:-0.5% d3:-0.5% d5:-0.5% d7:-0.5% d10:-0.5% d14:-0.5% d20:-0.5% d30:-0.5% 
+
+  PNJ_2026_01 (PNJ) ATL ✓WIN PnL=+2.0%  MxGain=+9.5% @d3  MxDD=-9.5% @d10
+    Timeline: d1:vni_dist5(-1.7%) → d4:failedBO(-1.7%) → d4:lowerHigh(-1.7%) → d4:churning(-1.7%) → d5:lowerLow(-2.2%) → d5:lateBase(-2.2%) → d7:breakMA10(-2.2%) → d7:breakATR(-2.2%) ... (+5 more)
+    DD curve: d1:-1.7% d3:-1.7% d5:-2.2% d7:-2.2% d10:-9.5% d14:-9.5% d20:-9.5% 
+
+  BIC_2026_01 (BIC) BTL ✓WIN PnL=+2.7%  MxGain=+5.6% @d4  MxDD=-15.8% @d21
+    Timeline: d1:lowerHigh(-6.9%) → d1:lowerLow(-6.9%) → d1:vni_dist5(-6.9%) → d5:breakMA10(-6.9%) → d5:breakMA20(-6.9%) → d5:breakATR(-6.9%) → d5:vni_dist8(-6.9%) → d5:vni_breakMA50(-6.9%) ... (+2 more)
+    DD curve: d1:-6.9% d3:-6.9% d5:-6.9% d7:-8.1% d10:-8.7% d14:-8.7% d20:-11.5% 
+
+  PVS_2026_01 (PVS) ATL ✓WIN PnL=+3.4%  MxGain=+29.7% @d19  MxDD=-8.7% @d27
+    Timeline: d1:lateBase(-3.7%) → d1:vni_dist5(-3.7%) → d5:lowerHigh(-3.7%) → d5:rsDiverg(-3.7%) → d7:breakMA10(-3.7%) → d7:lowerLow(-3.7%) → d7:vni_dist8(-3.7%) → d7:vni_breakMA50(-3.7%) ... (+3 more)
+    DD curve: d1:-3.7% d3:-3.7% d5:-3.7% d7:-3.7% d10:-4.8% d14:-4.8% d20:-4.8% 
+
+  G36_2026_01 (G36) BTL ✓WIN PnL=+7.0%  MxGain=+19.8% @d2  MxDD=-16.5% @d32
+    Timeline: d1:vni_dist5(-0.8%) → d3:lowerHigh(-0.8%) → d4:rsDiverg(-0.8%) → d5:breakATR(-0.8%) → d6:breakMA10(-0.8%) → d7:lowerLow(-0.8%) → d16:breakMA20(-0.8%) → d16:vni_dist8(-0.8%) ... (+3 more)
+    DD curve: d1:-0.8% d3:-0.8% d5:-0.8% d7:-0.8% d10:-0.8% d14:-0.8% d20:-0.8% d30:-6.6% 
+
+  MSR_2026_01 (MSR) ATL ✓WIN PnL=+9.9%  MxGain=+56.6% @d26  MxDD=-14.8% @d8
+    Timeline: d1:lateBase(+3.0%) → d1:vni_dist5(+3.0%) → d2:rsDiverg(+0.0%) → d3:lowerHigh(+0.0%) → d5:breakATR(-2.5%) → d6:breakMA10(-10.7%) → d6:lowerLow(-10.7%) → d6:vni_dist8(-10.7%) ... (+1 more)
+    DD curve: d1:+3.0% d3:+0.0% d5:-2.5% d7:-10.7% d10:-14.8% d14:-14.8% d20:-14.8% 
+
+  PVC_2025_12 (PVC) BTL ✓WIN PnL=+15.8%  MxGain=+100.0% @d40  MxDD=-2.6% @d1
+    Timeline: d1:lowerHigh(-2.6%) → d1:churning(-2.6%) → d5:climaxTop(-2.6%) → d5:vni_dist5(-2.6%) → d7:lateBase(-2.6%) → d13:rsDiverg(-2.6%) → d16:breakMA10(-2.6%) → d16:lowerLow(-2.6%) ... (+5 more)
+    DD curve: d1:-2.6% d3:-2.6% d5:-2.6% d7:-2.6% d10:-2.6% d14:-2.6% d20:-2.6% d30:-2.6% 
+
+  DCL_2026_01 (DCL) ATL ✓WIN PnL=+16.0%  MxGain=+24.6% @d36  MxDD=-3.0% @d4
+    Timeline: d1:lowerHigh(-2.1%) → d1:lateBase(-2.1%) → d1:vni_dist5(-2.1%) → d1:sector_weak(-2.1%) → d14:rsDiverg(-3.0%) → d19:vni_dist8(-3.0%) → d19:vni_breakMA50(-3.0%) → d27:breakMA10(-3.0%) ... (+3 more)
+    DD curve: d1:-2.1% d3:-2.4% d5:-3.0% d7:-3.0% d10:-3.0% d14:-3.0% d20:-3.0% d30:-3.0% 
+
+  BIG_2026_02 (BIG) ATL ✓WIN PnL=+19.2%  MxGain=+30.0% @d3  MxDD=-18.8% @d12
+    Timeline: d1:vni_dist5(+0.0%) → d2:climaxTop(+0.0%) → d3:failedBO(+0.0%) → d4:lowerHigh(+0.0%) → d5:rsDiverg(+0.0%) → d5:breakATR(+0.0%) → d7:breakMA10(-8.8%) → d7:lowerLow(-8.8%) ... (+4 more)
+    DD curve: d1:+0.0% d3:+0.0% d5:+0.0% d7:-8.8% d10:-10.0% d14:-18.8% 
+
+  PLX_2026_01 (PLX) ATL ✓WIN PnL=+19.9%  MxGain=+35.9% @d29  MxDD=-6.6% @d36
+    Timeline: d1:lateBase(-3.5%) → d1:vni_dist5(-3.5%) → d6:lowerHigh(-3.5%) → d15:breakMA10(-3.5%) → d15:breakATR(-3.5%) → d16:lowerLow(-3.5%) → d16:vni_dist8(-3.5%) → d16:vni_breakMA50(-3.5%) ... (+2 more)
+    DD curve: d1:-3.5% d3:-3.5% d5:-3.5% d7:-3.5% d10:-3.5% d14:-3.5% d20:-3.5% d30:-3.5% 
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  KHUYẾN NGHỊ EXIT STRATEGY
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  Top 3 signals (by composite score): vni_dist5, lowerHigh, lateBase
+    vni_dist5: accuracy=64%, avg fire day=1.3, DD at fire=-3.7%, avoidable DD=-11.3%
+    lowerHigh: accuracy=64%, avg fire day=2.0, DD at fire=-3.6%, avoidable DD=-11.5%
+    lateBase: accuracy=64%, avg fire day=4.1, DD at fire=-4.7%, avoidable DD=-11.2%
+
+  ATL best: volClimax, vni_dist5, lateBase
+    volClimax: accuracy=100%, day=1.0, DD@fire=-7.0%
+    vni_dist5: accuracy=50%, day=1.1, DD@fire=-3.5%
+    lateBase: accuracy=53%, day=2.7, DD@fire=-3.6%
+
+  BTL best: lowerHigh, vni_dist5, breakATR
+    lowerHigh: accuracy=76%, day=1.4, DD@fire=-3.5%
+    vni_dist5: accuracy=76%, day=1.5, DD@fire=-3.9%
+    breakATR: accuracy=76%, day=4.0, DD@fire=-4.8%
+
+  ⚠ VNI DistDays≥8 at entry: 2 trades, 100% lose rate
+  ✓ VNI DistDays<5 at entry: 3 trades, 33% lose rate
+
+  Saved: C:\Users\LAPTOP\Documents\GitHub\vnstock-main\tradingview\exit_signal_detail.csv
+  Report: C:\Users\LAPTOP\Documents\GitHub\vnstock-main\tradingview\exit_signal_report.txt
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  DONE
+════════════════════════════════════════════════════════════════════════════════════════════════════
