@@ -29,6 +29,7 @@ darvasMaxWidth = input.float(15.0, "Darvas Max Box Width %", minval=5, maxval=30
 rsiOversoldLookback = input.int(100, "RSI Oversold Lookback (bars)", minval=20, maxval=200)
 
 // Display inputs - toggle plots that may affect Y-axis scale
+showInfoPanel = input.bool(true, "Show Info Panel (tắt để xem Backtest panels)")
 showMA20      = input.bool(true, "Show MA20")
 showMA50      = input.bool(true, "Show MA50")
 showMA150     = input.bool(false, "Show MA150 (may compress chart)")
@@ -117,9 +118,8 @@ isStage2OK = trendScore >= 5 and trendScore < 8
 bool isAboveTheLine = condPriceAboveAll and condMaStacked
 bool isBelowTheLine = not isAboveTheLine
 
-// Switch Point Detection
+// Switch Point Detection (used for ETL barsSinceATLSwitch tracking)
 bool switchToATL = isAboveTheLine and not isAboveTheLine[1]  // BTL → ATL
-bool switchToBTL = isBelowTheLine and not isBelowTheLine[1]  // ATL → BTL
 
 // ══════════════════════════════════════════════════════════════════
 // WEINSTEIN STAGE ANALYSIS (For BTL Mode)
@@ -155,7 +155,32 @@ string weinsteinStage = wStage4 ? "Stage 4 (Decline)" : wStage1Breakout ? "Stage
 string weinsteinGrade = weinsteinScore >= 70 ? "A" : weinsteinScore >= 50 ? "B" : weinsteinScore >= 30 ? "C" : "F"
 
 // ══════════════════════════════════════════════════════════════════════
-// DARVAS BOX DETECTION (For BTL Mode)
+// ETL (EMERGING THROUGH THE LINE) ZONE DETECTION
+// ══════════════════════════════════════════════════════════════════════
+// ETL = Transitioning from BTL to ATL. Conditions (any one):
+// 1. Not ATL but Stage 2 Early or Stage 1 Breakout (Weinstein improving)
+// 2. Recently switched to ATL (≤30 bars) but not confirmed Stage 2 yet
+// 3. Not ATL but Price > MA200, MA30w rising, MA50-MA150 gap > -3%
+var int lastSwitchToATLBar = 0
+if switchToATL
+    lastSwitchToATLBar := bar_index
+int barsSinceATLSwitch = lastSwitchToATLBar > 0 ? bar_index - lastSwitchToATLBar : 999
+
+bool etlCond1 = isBelowTheLine and (wStage2Early or wStage1Breakout)
+bool etlCond2 = isAboveTheLine and barsSinceATLSwitch <= 30 and not isStage2
+bool etlCond3 = isBelowTheLine and not na(ma200) and close > ma200 and ma30wSlope > 0 and (not na(ma50) and not na(ma150) and ma150 > 0 ? (ma50 - ma150) / ma150 * 100 > -3 : false)
+bool isETL = etlCond1 or etlCond2 or etlCond3
+
+// 3-Zone classification: ATL (confirmed), ETL (transitioning), BTL (below)
+string zoneMode = isAboveTheLine and not isETL ? "ATL" : isETL ? "ETL" : "BTL"
+
+// Zone transition detection (mutually exclusive, based on zoneMode)
+bool zoneToATL = zoneMode == "ATL" and zoneMode[1] != "ATL"
+bool zoneToETL = zoneMode == "ETL" and zoneMode[1] != "ETL"
+bool zoneToBTL = zoneMode == "BTL" and zoneMode[1] != "BTL"
+
+// ══════════════════════════════════════════════════════════════════════
+// DARVAS BOX DETECTION (For BTL/ETL Mode)
 // ══════════════════════════════════════════════════════════════════════
 // Darvas Box: Price consolidation range - ANTI-REPAINT
 float darvasHigh = ta.highest(high[1], darvasBoxLen)  // Exclude current bar
@@ -207,7 +232,8 @@ var string btlGrade = "F"
 // ══════════════════════════════════════════════════════════════════
 
 // 1. Weekly RSI Oversold (Setup condition - mean reversion)
-float rsiWeekly = request.security(syminfo.tickerid, "W", ta.rsi(close, 14))
+// ANTI-REPAINT: Use [1] to get PREVIOUS completed week's RSI (not current developing week)
+float rsiWeekly = request.security(syminfo.tickerid, "W", ta.rsi(close, 14)[1])
 bool weeklyOversold = rsiWeekly < 30
 bool weeklyOversoldRecovering = rsiWeekly > 30 and rsiWeekly[1] <= 30  // Just crossed above 30
 int barsSinceOversold = ta.barssince(weeklyOversold)
@@ -363,18 +389,18 @@ rangePct = (high - low) / close * 100
 rangeMA5 = ta.sma(rangePct, 5)
 rangeMA20 = ta.sma(rangePct, 20)
 tightnessRatio = rangeMA5 / rangeMA20
-higherLows = ta.lowest(low, pivotLook) >= ta.lowest(low, pivotLook * 2)
+higherLows = ta.lowest(low[1], pivotLook) >= ta.lowest(low[1], pivotLook * 2)  // ANTI-REPAINT
 isTight = tightnessRatio < 0.9 and higherLows
 
 // Pattern detection
 isHTF = priorGain >= htfMinGain and baseDepthPct <= 25 and baseDepthPct >= 10 and tightnessRatio < 0.6 and pricePosPct >= 70
 isCup = baseDepthPct >= 15 and baseDepthPct <= 65 and pricePosPct >= 70 and tightnessRatio < 0.85 and tCount >= 1 and volDryUp
-low1 = ta.lowest(low, baseLen / 2)
+low1 = ta.lowest(low[1], baseLen / 2)  // ANTI-REPAINT
 low2 = ta.lowest(low[baseLen/2], baseLen / 2)
 hasWShape = math.abs(low1 - low2) / low1 * 100 < 5
 isDoubleBottom = hasWShape and baseDepthPct >= 15 and baseDepthPct <= 50 and pricePosPct >= 60 and hasVCPchar
 isFlatBase = baseDepthPct <= 15 and pricePosPct >= 80 and volHealthy
-pivotLow1 = ta.lowest(low, pivotLook)
+pivotLow1 = ta.lowest(low[1], pivotLook)  // ANTI-REPAINT
 pivotLow2 = ta.lowest(low[pivotLook], pivotLook)
 pivotLow3 = ta.lowest(low[pivotLook*2], pivotLook)
 isAscending = pivotLow1 > pivotLow2 and pivotLow2 > pivotLow3 and baseDepthPct <= 35 and pricePosPct >= 50
@@ -383,8 +409,8 @@ isVCP = hasVCPchar and baseDepthPct <= 35 and pricePosPct >= 70 and isTight and 
 
 // Low-Cheat Pivot Detection (Minervini: buy at bottom of last VCP contraction)
 // Entry BEFORE breakout when VCP is confirmed (T >= 2) and price is at contraction low
-float lastContractionLow  = ta.lowest(low, vcpSegLen)
-float lastContractionHigh = ta.highest(high, vcpSegLen)
+float lastContractionLow  = ta.lowest(low[1], vcpSegLen)   // ANTI-REPAINT
+float lastContractionHigh = ta.highest(high[1], vcpSegLen)  // ANTI-REPAINT
 float contractionRange    = lastContractionHigh > 0 ? (lastContractionHigh - lastContractionLow) / lastContractionHigh * 100 : 100
 bool  atContractionLow    = close <= lastContractionLow * 1.02  // Within 2% of contraction low
 bool  isLowCheat = hasVCPchar and tCount >= 2 and atContractionLow and volDryUp and isTight and contractionRange <= 8 and pricePosPct >= 50
@@ -499,7 +525,7 @@ float stop1_Pct = (entryLevel - stop1_BaseLow) / entryLevel * 100
 bool stop1_OK = stop1_Pct <= 8
 
 // Method 2: Swing Low (đáy 10 bar gần nhất)
-float stop2_SwingLow = ta.lowest(low, 10) * 0.99  // 1% buffer
+float stop2_SwingLow = ta.lowest(low[1], 10) * 0.99  // 1% buffer, ANTI-REPAINT
 float stop2_Pct = (entryLevel - stop2_SwingLow) / entryLevel * 100
 bool stop2_OK = stop2_Pct <= 8
 
@@ -514,8 +540,8 @@ bool stop3_OK = stop3_Pct <= 8
 // - Với Cup/Handle: dưới handle low
 // - Với Double Bottom: dưới đáy thứ 2
 // - Default: fixed 7% hoặc swing low (cái nào tight hơn)
-float vcpTightStop = ta.lowest(low, vcpSegLen) * 0.99
-float handleLow = ta.lowest(low, 5) * 0.99  // Pre-calculate handle low
+float vcpTightStop = ta.lowest(low[1], vcpSegLen) * 0.99  // ANTI-REPAINT
+float handleLow = ta.lowest(low[1], 5) * 0.99  // ANTI-REPAINT
 float fixedStop = entryLevel * 0.93  // Fixed 7%
 float minerviniStop = math.max(vcpTightStop, fixedStop)  // Lấy cái cao hơn (tight hơn)
 // Nếu có pattern cụ thể, điều chỉnh
@@ -642,7 +668,7 @@ bool pullbackVolDry1  = volume[1] < volMA50 * 0.7                  // Previous b
 bool isPullbackBuy = recentBreakout and pricePulledBack and priceAboveSupport and pullbackVolDry1 and isBouncing and marketBullish
 
 // Pullback stop (v2: wider stop for deeper pullbacks)
-float pullbackSwingLow = ta.lowest(low, isDeepPB ? 8 : 5)  // v2: wider lookback for deep PB
+float pullbackSwingLow = ta.lowest(low[1], isDeepPB ? 8 : 5)  // v2: ANTI-REPAINT
 float pullbackStop     = math.max(pullbackSwingLow * 0.99, atlBreakoutPivot * 0.95)  // v2: pivot-5% (was -3%)
 float pullbackStopPct  = close > 0 ? (close - pullbackStop) / close * 100 : 99
 bool  pullbackStopOK   = pullbackStopPct <= 7  // v2: max 7% stop (was 5%), Minervini ceiling
@@ -698,7 +724,7 @@ bool reentryVolOK = volume > volMa * 0.8                       // At least near-
 bool isReentrySetup = recentStopOut and reentryStructureOK and reentryRsOK and reentryBounce and reentryVolOK and marketBullish
 
 // Re-entry stop (from recent swing low, max 8% — Minervini ceiling)
-float reentrySwingLow = ta.lowest(low, 5)
+float reentrySwingLow = ta.lowest(low[1], 5)  // ANTI-REPAINT
 float reentryStop = reentrySwingLow * 0.98
 float reentryStopPct = close > 0 ? (close - reentryStop) / close * 100 : 99
 bool reentryStopOK = reentryStopPct <= 8 and reentryStopPct >= 3  // 3-8% range (stop distance filter)
@@ -710,6 +736,98 @@ bool isReentryBuy_RT = isReentryBuy  // Same for RT
 if isReentryBuy or barsSinceStop > 40
     wasStoppedOut := false
     stoppedOutBar := 0
+
+// ═══════════════════════════════════════════════════════════════════
+// ETL BUY SIGNAL (Transitioning stocks - relaxed thresholds)
+// ═══════════════════════════════════════════════════════════════════
+// ETL uses lower thresholds than ATL: RS >= 50, Vol >= 120%, Stop <= 10%
+// Breakout can be pivot OR Darvas
+bool etlRsOK = not na(rsNorm) and rsNorm >= 50
+bool etlVolOK = volSurgePct >= 120
+bool etlPatOK = patternScore >= 30 or emaAbove
+bool etlStopOK_bo = stop4_Pct <= 10  // Relaxed from ATL's 8%
+bool etlBreakout = (isBreakout or darvasBreakout) and etlVolOK
+bool etlMarketOK = not marketStage4  // Less strict than ATL's marketBullish
+bool etlBuyCondition = isETL and etlBreakout and etlRsOK and etlPatOK and etlStopOK_bo and etlMarketOK and not wStage4
+
+// ETL Buy anti-repaint
+var bool etlBuyTriggered = false
+var int etlBuyBar = 0
+if etlBuyCondition and not etlBuyCondition[1]
+    etlBuyTriggered := true
+    etlBuyBar := bar_index
+if close < priorPivot * 0.93 or wStage4
+    etlBuyTriggered := false
+    etlBuyBar := 0
+bool etlBuySignal = etlBuyBar == bar_index
+bool etlBuySignal_RT = etlBuyCondition
+
+// ═══════════════════════════════════════════════════════════════════
+// ETL PULLBACK BUY (Same mechanics as ATL PB, relaxed RS/stop)
+// ═══════════════════════════════════════════════════════════════════
+bool etlPBStopOK = pullbackStopPct <= 8  // ETL: max 8% (ATL: 7%)
+bool isEtlPullbackBuy = isETL and isPullbackBuy and etlPBStopOK and etlRsOK
+bool isEtlPullbackBuy_RT = isETL and isPullbackBuy_RT and etlPBStopOK and etlRsOK
+
+// ═══════════════════════════════════════════════════════════════════
+// ETL RE-ENTRY (Same mechanics as ATL RE, relaxed RS)
+// ═══════════════════════════════════════════════════════════════════
+bool etlReRsOK = not na(rsNorm) and rsNorm >= 50  // Relaxed from 70
+bool isEtlReentrySetup = recentStopOut and reentryStructureOK and etlReRsOK and reentryBounce and reentryVolOK and etlMarketOK
+bool isEtlReentryBuy = isETL and isEtlReentrySetup and reentryStopOK
+bool isEtlReentryBuy_RT = isEtlReentryBuy
+
+// ═══════════════════════════════════════════════════════════════════
+// BTL PULLBACK BUY (After Darvas breakout, pull back to box support)
+// ═══════════════════════════════════════════════════════════════════
+int barsSinceDarvasBO = darvasBreakoutTriggered ? bar_index - darvasBreakoutBar : 999
+bool recentDarvasBO = darvasBreakoutTriggered and barsSinceDarvasBO >= 2 and barsSinceDarvasBO <= 15
+
+float btlPBSupport = math.max(not na(ema10) ? ema10 : 0, darvasLow)
+bool btlPricePulledBack = close <= darvasHigh * 1.03     // Back near Darvas High (+3%)
+bool btlPriceAboveSupport = close >= btlPBSupport        // Holding box/EMA support
+bool btlPBVolDry = volume[1] < volMA50 * 0.7
+bool btlPBBounce = close > open and close > close[1]
+
+bool isBtlPullbackRaw = recentDarvasBO and btlPricePulledBack and btlPriceAboveSupport and btlPBVolDry and btlPBBounce and marketOKforBTL
+float btlPBSwingLow = ta.lowest(low[1], 5)  // ANTI-REPAINT
+float btlPBStop = math.max(btlPBSwingLow * 0.99, darvasLow * 0.98)
+float btlPBStopPct = close > 0 ? (close - btlPBStop) / close * 100 : 99
+bool btlPBStopOK = btlPBStopPct <= 10 and btlPBStopPct >= 2  // BTL: 2-10%
+bool isBtlPullbackBuy = isBelowTheLine and not isETL and isBtlPullbackRaw and btlPBStopOK
+bool isBtlPullbackBuy_RT = isBtlPullbackBuy
+
+// ═══════════════════════════════════════════════════════════════════
+// BTL RE-ENTRY (After BTL stop-out, structure recovers)
+// ═══════════════════════════════════════════════════════════════════
+var bool btlWasStoppedOut = false
+var int btlStoppedOutBar = 0
+
+bool btlJustStopped = not btlBuyTriggered and btlBuyTriggered[1] and btlStopHit
+if btlJustStopped
+    btlWasStoppedOut := true
+    btlStoppedOutBar := bar_index
+
+int barsSinceBtlStop = btlWasStoppedOut ? bar_index - btlStoppedOutBar : 999
+bool recentBtlStopOut = btlWasStoppedOut and barsSinceBtlStop >= 3 and barsSinceBtlStop <= 30
+
+bool btlReStructureOK = (not na(ma150) and close > ma150) or close > darvasLow
+bool btlReBounce = close > open and close > close[1]
+bool btlReVolOK = volume > volMa * 0.8
+bool btlReMarketOK = marketOKforBTL
+
+bool isBtlReentrySetup = recentBtlStopOut and btlReStructureOK and btlReBounce and btlReVolOK and btlReMarketOK and emaAbove and not wStage4
+float btlReSwingLow = ta.lowest(low[1], 5)  // ANTI-REPAINT
+float btlReStop = btlReSwingLow * 0.98
+float btlReStopPct = close > 0 ? (close - btlReStop) / close * 100 : 99
+bool btlReStopOK = btlReStopPct <= 10 and btlReStopPct >= 3  // BTL: 3-10%
+
+bool isBtlReentryBuy = isBelowTheLine and not isETL and isBtlReentrySetup and btlReStopOK
+bool isBtlReentryBuy_RT = isBtlReentryBuy
+
+if isBtlReentryBuy or barsSinceBtlStop > 40
+    btlWasStoppedOut := false
+    btlStoppedOutBar := 0
 
 // ═══════════════════════════════════════════════════════════════════
 // TREND REVERSAL / DECLINE SIGNALS (Minervini Exit Philosophy)
@@ -975,6 +1093,21 @@ bool entryLowCheat = lowCheatEntry and (tier12Qualified or rsBasedQualified)
 bool entryReentry_RT = isReentryBuy_RT
 bool entryReentry = isReentryBuy
 
+// Zone gate: ATL signals only fire in true ATL zone (not in ETL where isAboveTheLine can also be true)
+bool isATLzone = not isETL
+
+// ETL/BTL final signals (thresholds already embedded in raw signals)
+bool isEtlBuyNow_RT = etlBuySignal_RT
+bool isEtlBuyNow = etlBuySignal
+bool isEtlPullbackNow_RT = isEtlPullbackBuy_RT
+bool isEtlPullbackNow = isEtlPullbackBuy
+bool isEtlReentryNow_RT = isEtlReentryBuy_RT
+bool isEtlReentryNow = isEtlReentryBuy
+bool isBtlPullbackNow_RT = isBtlPullbackBuy_RT
+bool isBtlPullbackNow = isBtlPullbackBuy
+bool isBtlReentryNow_RT = isBtlReentryBuy_RT
+bool isBtlReentryNow = isBtlReentryBuy
+
 // Entry Grade based on Minervini criteria ONLY
 // A+ = Fresh breakout with volume
 // A  = Pullback buy (tighter stop, higher win rate)
@@ -986,8 +1119,8 @@ bool entryReentry = isReentryBuy
 // C  = Stop too wide or market weak
 // F  = Not tradeable per Minervini
 // Use _RT for live display in panel (shows signal during the day)
-string entryGrade = entryReady_RT ? "A+" : entryPullback_RT ? pullbackGrade : entryActive ? "A" : entryLowCheat_RT ? "A-" : entryReentry_RT ? "B+" : entryWatch ? "A-" : (minerviniStopOK and marketBullish) ? "B" : minerviniStopOK ? "C" : "F"
-string entryStatus = entryReady_RT ? "BUY!" : entryPullback_RT ? "PULLBACK BUY!" : entryActive ? "ADD/HOLD" : entryLowCheat_RT ? "LOW-CHEAT!" : entryReentry_RT ? "RE-ENTRY!" : entryWatch ? "READY" : minerviniStopOK ? "WATCH" : "WAIT"
+string entryGrade = isEtlBuyNow_RT ? "B+" : isEtlPullbackNow_RT ? "B" : isEtlReentryNow_RT ? "B" : entryReady_RT and isATLzone ? "A+" : entryPullback_RT and isATLzone ? pullbackGrade : entryActive and isATLzone ? "A" : entryLowCheat_RT and isATLzone ? "A-" : entryReentry_RT and isATLzone ? "B+" : entryWatch and isATLzone ? "A-" : (minerviniStopOK and marketBullish) ? "B" : minerviniStopOK ? "C" : "F"
+string entryStatus = isEtlBuyNow_RT ? "ETL BUY!" : isEtlPullbackNow_RT ? "ETL PULLBACK!" : isEtlReentryNow_RT ? "ETL RE-ENTRY!" : entryReady_RT and isATLzone ? "BUY!" : entryPullback_RT and isATLzone ? "PULLBACK BUY!" : entryActive and isATLzone ? "ADD/HOLD" : entryLowCheat_RT and isATLzone ? "LOW-CHEAT!" : entryReentry_RT and isATLzone ? "RE-ENTRY!" : entryWatch and isATLzone ? "READY" : minerviniStopOK ? "WATCH" : "WAIT"
 
 // Reference: Other stop methods count (for comparison only)
 string refStopInfo = str.tostring(stopMethodsOK) + "/4 methods ≤8%"
@@ -1007,26 +1140,26 @@ bool isQualified = tier12Qualified or rsBasedQualified
 // DUAL SIGNALS for verdict:
 // isBuyNow_RT: Real-time for panel display & alerts (shows during the day)
 // isBuyNow: Confirmed for bar coloring (only after bar closes)
-bool isBuyNow_RT = isQualified and entryReady_RT and rsStrong  // Real-time for panel (RS >= 80)
-bool isBuyNow = isQualified and entryReady and rsStrong        // Confirmed for bar color (RS >= 80)
-bool isPullbackBuyNow_RT = entryPullback_RT and rsStrong       // Pullback buy real-time
-bool isPullbackBuyNow = entryPullback and rsStrong             // Pullback buy confirmed
-bool isLowCheatNow_RT = entryLowCheat_RT and rsStrong          // Low-cheat real-time
-bool isLowCheatNow = entryLowCheat and rsStrong                // Low-cheat confirmed
-bool isReentryNow_RT = entryReentry_RT                         // v2: Re-entry (RS >= 70 already in setup)
-bool isReentryNow = entryReentry                               // v2: Re-entry confirmed
-bool isAddHold = isQualified and entryActive and rsStrong      // RS >= 80 required for ADD
-bool isReadyToBuy = isQualified and entryWatch
+bool isBuyNow_RT = isATLzone and isQualified and entryReady_RT and rsStrong
+bool isBuyNow = isATLzone and isQualified and entryReady and rsStrong
+bool isPullbackBuyNow_RT = isATLzone and entryPullback_RT and rsStrong
+bool isPullbackBuyNow = isATLzone and entryPullback and rsStrong
+bool isLowCheatNow_RT = isATLzone and entryLowCheat_RT and rsStrong
+bool isLowCheatNow = isATLzone and entryLowCheat and rsStrong
+bool isReentryNow_RT = isATLzone and entryReentry_RT
+bool isReentryNow = isATLzone and entryReentry
+bool isAddHold = isATLzone and isQualified and entryActive and rsStrong
+bool isReadyToBuy = isATLzone and isQualified and entryWatch
 bool isSuperStockWatch = superStockCandidate and not isQualified and not isBuyNow and not isAddHold  // Potential super stock forming
 bool isWatchlist = (tier12Watch or isSuperStockWatch) and not isQualified and not isAddHold
 bool isSkip = not tier12Watch and not superStockCandidate
 
-// Any buy signal (breakout, pullback, low-cheat, or re-entry)
-bool anyBuyNow_RT = isBuyNow_RT or isPullbackBuyNow_RT or isLowCheatNow_RT or isReentryNow_RT
-bool anyBuyNow = isBuyNow or isPullbackBuyNow or isLowCheatNow or isReentryNow
-string buyType = isBuyNow_RT ? "Breakout" : isPullbackBuyNow_RT ? "Pullback" : isLowCheatNow_RT ? "Low-Cheat" : isReentryNow_RT ? "Re-entry" : "None"
+// Any buy signal - ALL zones combined
+bool anyBuyNow_RT = isBuyNow_RT or isPullbackBuyNow_RT or isLowCheatNow_RT or isReentryNow_RT or isEtlBuyNow_RT or isEtlPullbackNow_RT or isEtlReentryNow_RT or btlBuySignal_RT or isBtlPullbackNow_RT or isBtlReentryNow_RT
+bool anyBuyNow = isBuyNow or isPullbackBuyNow or isLowCheatNow or isReentryNow or isEtlBuyNow or isEtlPullbackNow or isEtlReentryNow or btlBuySignal or isBtlPullbackNow or isBtlReentryNow
+string buyType = isBuyNow_RT ? "ATL Breakout" : isPullbackBuyNow_RT ? "ATL Pullback" : isLowCheatNow_RT ? "ATL Low-Cheat" : isReentryNow_RT ? "ATL Re-entry" : isEtlBuyNow_RT ? "ETL Breakout" : isEtlPullbackNow_RT ? "ETL Pullback" : isEtlReentryNow_RT ? "ETL Re-entry" : btlBuySignal_RT ? "BTL Breakout" : isBtlPullbackNow_RT ? "BTL Pullback" : isBtlReentryNow_RT ? "BTL Re-entry" : "None"
 
-// ATL Signal Memory - track last BUY for panel display
+// Signal Memory - track last BUY for panel display (any zone)
 var int lastATLBuyBar = 0
 var float lastATLBuyClose = 0.0
 var float lastATLPivot_mem = 0.0
@@ -1053,40 +1186,52 @@ plot(showStopTP ? addon1Level : na, "Add-on +2%", color=color.new(color.yellow, 
 // Bar color - AUTO SWITCH between ATL (Minervini) and BTL (Weinstein-Darvas)
 color barCol = color.new(color.gray, 40)
 
-if isAboveTheLine
-    // ATL Mode: Minervini colors (Lime/Yellow/Orange/Fuchsia/Teal/Blue)
+if zoneMode == "ATL"
+    // ATL Mode: All buys = Lime, non-buy states keep distinct colors
     barCol := isWatchlist ? color.new(color.orange, 0) : barCol
     barCol := isSuperStockWatch ? color.new(color.fuchsia, 0) : barCol
     barCol := isReadyToBuy ? color.new(color.yellow, 0) : barCol
-    barCol := isLowCheatNow ? color.new(color.blue, 0) : barCol          // Low-cheat = blue
-    barCol := isReentryNow ? color.new(color.olive, 0) : barCol          // v2: Re-entry = olive
     barCol := isAddHold ? color.new(color.aqua, 0) : barCol
-    barCol := isPullbackBuyNow ? color.new(color.teal, 0) : barCol       // Pullback = teal
-    barCol := isBuyNow and rsBasedQualified ? color.new(color.fuchsia, 0) : barCol
-    barCol := isBuyNow and not rsBasedQualified ? color.new(color.lime, 0) : barCol
+    barCol := isLowCheatNow ? color.new(color.lime, 0) : barCol
+    barCol := isReentryNow ? color.new(color.lime, 0) : barCol
+    barCol := isPullbackBuyNow ? color.new(color.lime, 0) : barCol
+    barCol := isBuyNow ? color.new(color.lime, 0) : barCol
+else if zoneMode == "ETL"
+    // ETL Mode: Yellow base, all buys = Lime
+    barCol := color.new(color.yellow, 60)
+    barCol := isEtlReentryNow ? color.new(color.lime, 0) : barCol
+    barCol := isEtlPullbackNow ? color.new(color.lime, 0) : barCol
+    barCol := isEtlBuyNow ? color.new(color.lime, 0) : barCol
 else
-    // BTL Mode: Weinstein-Darvas colors (Lime for BUY, Blue/Cyan for others)
+    // BTL Mode: All buys = Lime, non-buy states keep distinct colors
     barCol := btlWatchSignal ? color.new(color.aqua, 0) : barCol
     barCol := btlReadySignal ? color.new(color.blue, 0) : barCol
+    barCol := isBtlReentryNow ? color.new(color.lime, 0) : barCol
+    barCol := isBtlPullbackNow ? color.new(color.lime, 0) : barCol
     barCol := btlBuySignal ? color.new(color.lime, 0) : barCol
 
 barcolor(barCol)
 
 // Background - synchronized with mode
 color bgCol = na
-if isAboveTheLine
+if zoneMode == "ATL"
     bgCol := anyBuyNow ? color.new(color.lime, 90) : isAddHold ? color.new(color.aqua, 90) : isReadyToBuy ? color.new(color.green, 92) : isSuperStockWatch ? color.new(color.fuchsia, 95) : isWatchlist ? color.new(color.yellow, 95) : na
+else if zoneMode == "ETL"
+    bgCol := anyBuyNow ? color.new(color.lime, 90) : color.new(color.orange, 95)
 else
-    bgCol := btlBuySignal ? color.new(color.lime, 90) : btlReadySignal ? color.new(color.blue, 92) : btlWatchSignal ? color.new(color.aqua, 95) : na
+    bgCol := anyBuyNow ? color.new(color.lime, 90) : btlReadySignal ? color.new(color.blue, 92) : btlWatchSignal ? color.new(color.aqua, 95) : na
 bgcolor(bgCol)
 
 
-// Switch Point Markers (BTL ↔ ATL transitions)
-plotshape(switchToATL, "↑ Switch to ATL", style=shape.triangleup, location=location.belowbar, color=color.lime, size=size.small, text="ATL")
-plotshape(switchToBTL, "↓ Switch to BTL", style=shape.triangledown, location=location.abovebar, color=color.red, size=size.small, text="BTL")
+// Zone Transition Markers (BTL ↔ ETL ↔ ATL) - mutually exclusive via zoneMode
+plotshape(zoneToATL, "↑ Switch to ATL", style=shape.triangleup,   location=location.belowbar, color=color.lime,   size=size.small, text="ATL")
+plotshape(zoneToETL, "◆ Enter ETL",     style=shape.diamond,      location=location.belowbar, color=color.orange, size=size.small, text="ETL")
+plotshape(zoneToBTL, "↓ Switch to BTL", style=shape.triangledown, location=location.abovebar, color=color.red,    size=size.small, text="BTL")
 
 // Stage 1 Breakout Marker (BTL mode only - Weinstein)
-plotshape(isBelowTheLine and wStage1Breakout, "Stage 1 Breakout", style=shape.diamond, location=location.belowbar, color=color.blue, size=size.small, text="S1→2")
+plotshape(isBelowTheLine and wStage1Breakout and not isETL, "Stage 1 Breakout", style=shape.diamond, location=location.belowbar, color=color.blue, size=size.small, text="S1→2")
+
+// Buy signals shown via bar color (lime green) + panel details. No plotshape clutter.
 
 // Plot Darvas Box levels when in BTL mode
 plot(isBelowTheLine and showPivot ? darvasHigh : na, "Darvas Box High", color=color.new(color.blue, 30), style=plot.style_circles, linewidth=2)
@@ -1097,9 +1242,9 @@ plot(isBelowTheLine and showStopTP ? darvasLow : na, "Darvas Box Low", color=col
 // ══════════════════════════════════════════════════════════════════
 var table infoPanel = table.new(position.top_right, 1, 1, bgcolor=color.new(color.black, 20), border_width=1, border_color=color.gray)
 
-if barstate.islast
+if barstate.islast and showInfoPanel
     // Header with symbol, timeframe, date + MODE indicator
-    string modeIndicator = isAboveTheLine ? "🔺 ABOVE THE LINE (Minervini)" : "🔻 BELOW THE LINE (Weinstein-Darvas)"
+    string modeIndicator = zoneMode == "ATL" ? "🔺 ATL - ABOVE THE LINE (Minervini)" : zoneMode == "ETL" ? "🔶 ETL - EMERGING (Transition)" : "🔻 BTL - BELOW THE LINE (Weinstein-Darvas)"
     string headerInfo = syminfo.ticker + "  |  " + timeframe.period + "  |  " + str.tostring(year) + "/" + str.tostring(month) + "/" + str.tostring(dayofmonth) + "\nO:" + str.tostring(open, "#.#") + " H:" + str.tostring(high, "#.#") + " L:" + str.tostring(low, "#.#") + " C:" + str.tostring(close, "#.#") + "  |  Vol:" + str.tostring(volume / 1000, "#.#") + "K  B/S:" + str.tostring(buyPct, "#") + "/" + str.tostring(100 - buyPct, "#") + "%  Avg:" + str.tostring(volMa / 1000, "#.#") + "K"
     
     // ═══════════════════════════════════════════════════════════════════
@@ -1108,14 +1253,13 @@ if barstate.islast
     string panelText = ""
     color panelBgColor = color.new(color.gray, 80)
     
-    if isAboveTheLine
+    if zoneMode == "ATL" or zoneMode == "ETL"
         // ═══════════════════════════════════════════════════════════════════
-        // ATL MODE: MINERVINI PANEL (Original)
+        // ATL/ETL MODE: MINERVINI PANEL (ATL full, ETL hybrid)
         // ═══════════════════════════════════════════════════════════════════
         string qualifyMethod = rsBasedQualified and not tier12Qualified ? " [RS]" : ""
-        // Use _RT for real-time panel display (shows signal during the day)
-        // Unified verdict labels (consistent with BTL)
-        string verdict = isBuyNow_RT ? "★★★ ATL BUY ★★★" : isPullbackBuyNow_RT ? "★★★ ATL PULLBACK BUY ★★★" : isLowCheatNow_RT ? "★★★ ATL LOW-CHEAT ★★★" : isReentryNow_RT ? "★★ ATL RE-ENTRY ★★" : isAddHold ? "★★ ATL HOLD ★★" : isReadyToBuy ? "★★ ATL READY ★★" : isQualified ? "○ ATL WATCH ○" : isSuperStockWatch ? "◆ ATL FORMING ◆" : isWatchlist ? "◆ ATL FORMING ◆" : "-- SKIP --"
+        // Verdict includes ETL signals
+        string verdict = isBuyNow_RT ? "★★★ ATL BUY ★★★" : isPullbackBuyNow_RT ? "★★★ ATL PULLBACK BUY ★★★" : isLowCheatNow_RT ? "★★★ ATL LOW-CHEAT ★★★" : isReentryNow_RT ? "★★ ATL RE-ENTRY ★★" : isEtlBuyNow_RT ? "★★★ ETL BUY ★★★" : isEtlPullbackNow_RT ? "★★★ ETL PULLBACK ★★★" : isEtlReentryNow_RT ? "★★ ETL RE-ENTRY ★★" : isAddHold ? "★★ " + zoneMode + " HOLD ★★" : isReadyToBuy ? "★★ " + zoneMode + " READY ★★" : isQualified ? "○ " + zoneMode + " WATCH ○" : isSuperStockWatch ? "◆ " + zoneMode + " FORMING ◆" : isWatchlist ? "◆ " + zoneMode + " FORMING ◆" : "-- SKIP --"
         
         string trendIcon = isStage2 ? "🟢" : isStage2OK ? "🟡" : "🔴"
         string setupIcon = patternScore >= 85 ? "🟢" : patternScore >= 70 ? "🟢" : patternScore >= 50 ? "🟡" : patternScore >= 30 ? "🟠" : "🔴"
@@ -1123,7 +1267,15 @@ if barstate.islast
         string rsIcon = rsVeryStrong ? "🔥" : rsStrong ? "🟢" : "🟡"
         
         string entryConclusion = ""
-        if isSkip
+        // ETL-specific conclusions (checked first, before ATL)
+        if isEtlBuyNow_RT
+            entryConclusion := "🟠 ETL BUY - Transition breakout! Stop: " + str.tostring(stop4_Minervini, "#.#") + " (" + str.tostring(stop4_Pct, "#.#") + "%)"
+        else if isEtlPullbackNow_RT
+            entryConclusion := "🟠 ETL PULLBACK - Transition PB! Stop: " + str.tostring(pullbackStop, "#.#") + " (" + str.tostring(pullbackStopPct, "#.#") + "%)"
+        else if isEtlReentryNow_RT
+            entryConclusion := "🟠 ETL RE-ENTRY - Post-SL recovery in transition! Stop: " + str.tostring(reentryStop, "#.#") + " (" + str.tostring(reentryStopPct, "#.#") + "%)"
+        // ATL-specific conclusions (zone-gated)
+        else if isSkip
             entryConclusion := "⚠️ NO TRADE - Trend/Setup not qualified"
         else if rsWeak
             entryConclusion := "🔴 NO ENTRY - RS < 70 (laggard, not leader)"
@@ -1131,9 +1283,9 @@ if barstate.islast
             entryConclusion := "🔴 NO ENTRY - Stop > 8% (Minervini rule)"
         else if not marketBullish
             entryConclusion := "🟡 WAIT - Market weak, hold off"
-        else if entryReady_RT and rsBasedQualified and not tier12Qualified
+        else if isBuyNow_RT and rsBasedQualified and not tier12Qualified
             entryConclusion := "🔥 BUY [RS OVERRIDE] - Super stock breakout!"
-        else if entryReady_RT
+        else if isBuyNow_RT
             entryConclusion := "🟢 BUY - Breakout [" + breakoutType + "] + Volume!"
         else if isPullbackBuyNow_RT
             entryConclusion := "🟢 PULLBACK BUY (" + pullbackGrade + ") - " + (isDeepPB ? "Deep" : "Shallow") + " PB to " + (isDeepPB ? "EMA21" : "EMA10") + "! Stop: " + str.tostring(pullbackStop, "#.#") + " (" + str.tostring(pullbackStopPct, "#.#") + "%)"
@@ -1141,11 +1293,11 @@ if barstate.islast
             entryConclusion := "🟢 LOW-CHEAT - Buy at contraction low! Stop: " + str.tostring(lowCheatStop, "#.#") + " (" + str.tostring(lowCheatStopPct, "#.#") + "%)"
         else if isReentryNow_RT
             entryConclusion := "🟢 RE-ENTRY - Post-SL recovery! Structure OK. Stop: " + str.tostring(reentryStop, "#.#") + " (" + str.tostring(reentryStopPct, "#.#") + "%)"
-        else if entryActive and rsBasedQualified
+        else if isAddHold and rsBasedQualified
             entryConclusion := "🟢 ADD/HOLD [RS] - Super stock in play"
-        else if entryActive
+        else if isAddHold
             entryConclusion := "🟢 ADD/HOLD - In breakout zone, still valid"
-        else if entryWatch
+        else if isReadyToBuy
             entryConclusion := "🟡 READY - Wait for breakout + volume"
         else if superStockCandidate
             entryConclusion := "🔥 WATCH CLOSELY - Super stock candidate!"
@@ -1198,9 +1350,8 @@ if barstate.islast
         // ═══════════════════════════════════════════════════════════════════
         // BTL MODE: WEINSTEIN-DARVAS PANEL
         // ═══════════════════════════════════════════════════════════════════
-        // Use _RT for real-time panel display
-        // Unified verdict labels (consistent with ATL)
-        string btlVerdict = btlBuySignal_RT ? "★★★ BTL BUY ★★★" : btlInPosition ? "★★ BTL HOLD ★★" : btlReadySignal ? "★★ BTL READY ★★" : btlWatchSignal ? "○ BTL WATCH ○" : wStage4 ? "-- SKIP --" : "◆ BTL FORMING ◆"
+        // Verdict includes BTL PB and RE signals
+        string btlVerdict = btlBuySignal_RT ? "★★★ BTL BUY ★★★" : isBtlPullbackNow_RT ? "★★★ BTL PULLBACK ★★★" : isBtlReentryNow_RT ? "★★ BTL RE-ENTRY ★★" : btlInPosition ? "★★ BTL HOLD ★★" : btlReadySignal ? "★★ BTL READY ★★" : btlWatchSignal ? "○ BTL WATCH ○" : wStage4 ? "-- SKIP --" : "◆ BTL FORMING ◆"
         string btlScoreInfo = "BTL Score: " + btlGrade + " (" + str.tostring(btlScore) + ")  [W:" + str.tostring(weinsteinScore) + " D:" + str.tostring(darvasScore) + " R:" + str.tostring(rsiEmaScore) + "]"
         
         string stageIcon = wStage2Early ? "🟢" : wStage1Breakout ? "🟢" : wStage3 ? "🟡" : wStage1 ? "🟡" : "🔴"
@@ -1214,6 +1365,10 @@ if barstate.islast
             btlConclusion := "🔴 NO TRADE - Market Stage 4, avoid BTL"
         else if wStage4
             btlConclusion := "🔴 NO TRADE - Stock Stage 4 Decline"
+        else if isBtlPullbackNow_RT
+            btlConclusion := "🟢 BTL PULLBACK - Pull to Darvas support! Stop: " + str.tostring(btlPBStop, "#.#") + " (" + str.tostring(btlPBStopPct, "#.#") + "%)"
+        else if isBtlReentryNow_RT
+            btlConclusion := "� BTL RE-ENTRY - Post-SL recovery! Stop: " + str.tostring(btlReStop, "#.#") + " (" + str.tostring(btlReStopPct, "#.#") + "%)"
         else if btlBuySignal_RT
             btlConclusion := "🟣 BUY (" + btlEntryType + ") - Entry triggered!"
         else if btlInPosition
@@ -1294,7 +1449,7 @@ if barstate.islast
                  "└────────────────────────────\n"
 
         // Use _RT for real-time panel background
-        panelBgColor := btlBuySignal_RT ? color.new(color.lime, 80) : btlInPosition ? color.new(color.green, 80) : btlReadySignal ? color.new(color.blue, 80) : btlWatchSignal ? color.new(color.aqua, 85) : wStage4 ? color.new(color.red, 85) : color.new(color.gray, 80)
+        panelBgColor := btlBuySignal_RT ? color.new(color.lime, 80) : isBtlPullbackNow_RT ? color.new(color.teal, 80) : isBtlReentryNow_RT ? color.new(color.olive, 80) : btlInPosition ? color.new(color.green, 80) : btlReadySignal ? color.new(color.blue, 80) : btlWatchSignal ? color.new(color.aqua, 85) : wStage4 ? color.new(color.red, 85) : color.new(color.gray, 80)
     
     // ═══════════════════════════════════════════════════════════════════
     // COMMON SECTIONS (Exit Signals, Market Timing, Fundamentals)
@@ -1345,7 +1500,7 @@ if barstate.islast
     // Khi alert fire, copy nội dung từ Alert Log
     // ═══════════════════════════════════════════════════════════════════
     if enablePanelExport
-        bool shouldExport = isAboveTheLine ? (anyBuyNow_RT or isAddHold or isReadyToBuy) : (btlBuySignal_RT or btlReadySignal)
+        bool shouldExport = zoneMode == "ATL" or zoneMode == "ETL" ? (anyBuyNow_RT or isAddHold or isReadyToBuy) : (btlBuySignal_RT or isBtlPullbackNow_RT or isBtlReentryNow_RT or btlReadySignal)
         if shouldExport
             alert("📋 PANEL EXPORT - " + syminfo.ticker + "\n" + panelText, alert.freq_once_per_bar_close)
 
@@ -1392,10 +1547,18 @@ alertcondition(isFollowThroughDay, "🟢 FOLLOW-THROUGH DAY", "Market rally conf
 alertcondition(distDayCount >= 5, "🔴 HIGH DISTRIBUTION", "5+ distribution days - reduce exposure!")
 alertcondition(isDistributionDay, "⚠️ DISTRIBUTION DAY", "Market distribution day - be cautious!")
 
+// ETL Mode Alerts (Emerging Through The Line)
+alertcondition(isEtlBuyNow_RT, "🟠 ETL BUY", "ETL: Transition breakout with RS>=50, Vol>=120%!")
+alertcondition(isEtlPullbackNow_RT, "🟠 ETL PULLBACK", "ETL: Pullback to support after breakout!")
+alertcondition(isEtlReentryNow_RT, "🟠 ETL RE-ENTRY", "ETL: Post-SL recovery - structure intact!")
+
 // BTL Mode Alerts (Weinstein-Darvas) - Use _RT for real-time alerts
 alertcondition(btlBuySignal_RT, "🟣 BTL BUY - Darvas Breakout", "Below The Line: Darvas Box Breakout + Stage Transition!")
+alertcondition(isBtlPullbackNow_RT, "🟣 BTL PULLBACK", "BTL: Pullback to Darvas support after breakout!")
+alertcondition(isBtlReentryNow_RT, "🟣 BTL RE-ENTRY", "BTL: Post-SL recovery - EMA above, structure intact!")
 alertcondition(btlReadySignal, "🔵 BTL READY", "Below The Line: Box formed, ready for breakout!")
 alertcondition(btlWatchSignal, "BTL WATCH", "Below The Line: Stage 1/2 forming, watch closely!")
-alertcondition(switchToATL, "🔺 SWITCH TO ATL", "Transitioned from Below to Above The Line!")
-alertcondition(switchToBTL, "🔻 SWITCH TO BTL", "Transitioned from Above to Below The Line!")
+alertcondition(zoneToATL, "🔺 SWITCH TO ATL", "Zone transitioned to ATL - Above The Line confirmed!")
+alertcondition(zoneToETL, "🔶 ENTER ETL", "Zone transitioned to ETL - Emerging Through The Line!")
+alertcondition(zoneToBTL, "🔻 SWITCH TO BTL", "Zone transitioned to BTL - Below The Line!")
 alertcondition(wStage1Breakout, "🟢 STAGE 1 BREAKOUT", "Weinstein Stage 1 Breakout - potential new uptrend!")
