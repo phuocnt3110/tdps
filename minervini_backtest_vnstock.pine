@@ -21,7 +21,8 @@ baseLen       = input.int(30, "Base Length (bars)", minval=15, maxval=100)
 atrLen        = input.int(14, "ATR Length")
 vcpSegLen     = input.int(7,  "T-Segment Length")
 pivotLook     = input.int(5,  "Pivot Lookback")
-htfMinGain    = input.float(80.0, "HTF Min Prior Gain %")
+htfMinGain    = input.float(40.0, "HTF Min Prior Gain %", tooltip="v3: VN calibrated from 80%")
+vcpBaseLen    = input.int(60, "VCP Base Length (bars)", minval=30, maxval=120, tooltip="v3: Longer lookback for VCP contraction detection")
 
 // Weinstein-Darvas inputs (Below The Line mode)
 darvasBoxLen  = input.int(20, "Darvas Box Length (bars)", minval=10, maxval=50)
@@ -218,6 +219,11 @@ pivotDist    = (baseHigh - close) / baseHigh * 100
 priorLow  = ta.lowest(low[baseLen], baseLen)
 priorGain = (baseHigh - priorLow) / priorLow * 100
 
+// VCP-specific: longer lookback for contraction depth (v3)
+vcpBaseHigh = ta.highest(high[1], vcpBaseLen)
+vcpBaseLow  = ta.lowest(low[1], vcpBaseLen)
+vcpBaseDepth = vcpBaseHigh > 0 ? (vcpBaseHigh - vcpBaseLow) / vcpBaseHigh * 100 : 0
+
 // VCP (T-Count)
 atrPct = ta.atr(atrLen) / close * 100
 atr_T1 = ta.sma(atrPct, vcpSegLen * 4)
@@ -238,7 +244,8 @@ upVolMA   = ta.sma(upVol, 10)
 downVolMA = ta.sma(downVol, 10)
 volMA20 = ta.sma(volume, 20)
 volMA50 = ta.sma(volume, 50)
-volDryUp = volMA20 < volMA50 * 0.8
+volDryUp = volMA20 < volMA50 * 1.0    // v3: VN calibrated from 0.8
+volSuperDry = volMA20 < volMA50 * 0.7  // v3: bonus for true supply exhaustion
 accumRatio = upVolMA / math.max(downVolMA, 1)
 volHealthy = upVolMA >= downVolMA
 
@@ -248,24 +255,43 @@ rangeMA5 = ta.sma(rangePct, 5)
 rangeMA20 = ta.sma(rangePct, 20)
 tightnessRatio = rangeMA5 / rangeMA20
 higherLows = ta.lowest(low[1], pivotLook) >= ta.lowest(low[1], pivotLook * 2)  // ANTI-REPAINT
-isTight = tightnessRatio < 0.9 and higherLows
+isTight = tightnessRatio < 1.3 and higherLows  // v3: VN calibrated from 0.9
 
-// Pattern detection - CLONED
-isHTF = priorGain >= htfMinGain and baseDepthPct <= 25 and baseDepthPct >= 10 and tightnessRatio < 0.6 and pricePosPct >= 70
-isCup = baseDepthPct >= 15 and baseDepthPct <= 65 and pricePosPct >= 70 and tightnessRatio < 0.85 and tCount >= 1 and volDryUp
+// Pattern detection - CLONED - v3: VN calibrated thresholds
+isHTF = priorGain >= htfMinGain and baseDepthPct <= 25 and baseDepthPct >= 10 and tightnessRatio < 0.8 and pricePosPct >= 70  // v3: tightness 0.6→0.8
+isCup = baseDepthPct >= 15 and baseDepthPct <= 65 and pricePosPct >= 70 and tightnessRatio < 1.2 and tCount >= 1 and volDryUp  // v3: tightness 0.85→1.2
 low1 = ta.lowest(low[1], baseLen / 2)  // ANTI-REPAINT
 low2 = ta.lowest(low[baseLen/2], baseLen / 2)
 hasWShape = math.abs(low1 - low2) / low1 * 100 < 5
 isDoubleBottom = hasWShape and baseDepthPct >= 15 and baseDepthPct <= 50 and pricePosPct >= 60 and hasVCPchar
-isFlatBase = baseDepthPct <= 15 and pricePosPct >= 80 and volHealthy
+isFlatBase = baseDepthPct <= 20 and pricePosPct >= 80 and volHealthy  // v3: depth 15→20
 pivotLow1 = ta.lowest(low[1], pivotLook)  // ANTI-REPAINT
 pivotLow2 = ta.lowest(low[pivotLook], pivotLook)
 pivotLow3 = ta.lowest(low[pivotLook*2], pivotLook)
-isAscending = pivotLow1 > pivotLow2 and pivotLow2 > pivotLow3 and baseDepthPct <= 35 and pricePosPct >= 50
-isPowerPlay = pivotDist <= 3 and tightnessRatio < 0.5 and volDryUp and hasVCPchar
-isVCP = hasVCPchar and baseDepthPct <= 35 and pricePosPct >= 70 and isTight and volDryUp
+isAscending = pivotLow1 > pivotLow2 and pivotLow2 > pivotLow3 and baseDepthPct <= 40 and pricePosPct >= 50  // v3: depth 35→40
+isPowerPlay = pivotDist <= 3 and tightnessRatio < 0.7 and volDryUp and hasVCPchar  // v3: tightness 0.5→0.7
+isVCP = hasVCPchar and vcpBaseDepth <= 40 and pricePosPct >= 70 and isTight and volDryUp  // v3: uses vcpBaseLen=60, depth 35→40
 
-// Pattern Score - CLONED
+// PARABOLIC LAUNCH Detection (v3 - VN market momentum pattern)
+// Designed for stocks like GTD/CET/TIN with explosive moves from deep bases
+float rsAccel10 = not na(rsNorm) and not na(rsNorm[10]) ? rsNorm - rsNorm[10] : 0
+bool plRsOK = not na(rsNorm) and rsNorm >= 90
+bool plRsAccelOK = rsAccel10 >= 30
+bool plVolExplosion = volume >= volMA20 * 2.0 or (not na(volMA20[1]) and volume[1] >= nz(volMA20[1]) * 2.0) or (not na(volMA20[2]) and volume[2] >= nz(volMA20[2]) * 2.0)
+int plUpDays = (close > close[1] ? 1 : 0) + (close[1] > close[2] ? 1 : 0) + (close[2] > close[3] ? 1 : 0) + (close[3] > close[4] ? 1 : 0) + (close[4] > close[5] ? 1 : 0)
+bool plMomentumOK = plUpDays >= 3
+// Consecutive 5%+ gains filter (reduces false positives: BIG, TTF)
+bool d5p1 = close[1] > 0 ? (close - close[1]) / close[1] * 100 >= 5 : false
+bool d5p2 = close[2] > 0 ? (close[1] - close[2]) / close[2] * 100 >= 5 : false
+bool d5p3 = close[3] > 0 ? (close[2] - close[3]) / close[3] * 100 >= 5 : false
+bool d5p4 = close[4] > 0 ? (close[3] - close[4]) / close[4] * 100 >= 5 : false
+bool plConsec5pct = (d5p1 and d5p2) or (d5p2 and d5p3) or (d5p3 and d5p4)
+bool plZoneOK = (isAboveTheLine and barsSinceATLSwitch <= 15) or isETL
+bool plTsOK = trendScore >= 7
+bool plDeepBase = vcpBaseDepth >= 35  // Uses 60-bar lookback
+bool isParabolicLaunch = plRsOK and plRsAccelOK and plVolExplosion and plMomentumOK and plConsec5pct and plZoneOK and plTsOK and plDeepBase
+
+// Pattern Score - CLONED - v3: added PARABOLIC LAUNCH
 int patternScore = 0
 if isPowerPlay
     patternScore := 95
@@ -281,6 +307,8 @@ else if isFlatBase
     patternScore := 70
 else if isAscending
     patternScore := 72
+else if isParabolicLaunch
+    patternScore := 75  // v3: with RS bonus (+10) reaches 85 for tier12
 else if hasVCPchar and pricePosPct >= 50
     patternScore := 40
 else if pricePosPct < 50
