@@ -48,13 +48,32 @@ Designed for stocks like GTD, CET, TIN with explosive moves from deep bases.
 - Exceeds `tier12Qualified` threshold (77)
 - Exceeds `rsBasedQualified` threshold (50)
 
-### D. Component Score Updates
+### D. PL + Climax Top Conflict Resolution
+
+**Problem**: PARABOLIC LAUNCH fires every day during a parabolic move, but CLIMAX TOP also fires from Day 2+. This creates conflicting BUY + exhaustion warnings.
+
+**Analysis (BIG & GTD)**:
+
+| Entry | Climax? | Crash low vs stop | Result |
+|---|---|---|---|
+| GTD Day 1 (no Climax) | No | 48,800 > 36,828 | **+23% even at crash low** |
+| GTD Day 2 (Climax) | Yes | 48,800 > 42,315 | Risky but OK |
+| GTD Day 3 (Climax) | Yes | 48,800 ≈ 48,546 | 0.5% margin! |
+| GTD Day 4 (Climax) | Yes | 48,800 < 55,242 | **Stop hit, loss** |
+| GTD Day 5 (Climax) | Yes | 48,800 < 62,310 | **Stop hit, big loss** |
+
+**Solution**: When `isParabolicLaunch AND climaxTop` both true → suppress `freshBreakout`:
+- Day 1 PL (no Climax Top) → BUY fires normally
+- Day 2+ PL with Climax Top → BUY suppressed, shows "PARABOLIC CLIMAX" warning
+- Entry conclusion: `"🔴 PARABOLIC CLIMAX - BUY suppressed! Vol X% = exhaustion risk"`
+
+### E. Component Score Updates
 
 - `baseScore`: Adjusted breakpoints for VN depths (20/30/40/50)
 - `volScore`: Added `volSuperDry` bonus tier (15 pts vs 10 for regular volDryUp)
 - `tightScore`: Adjusted breakpoints (0.7/1.0/1.3) matching new thresholds
 
-### E. Files Modified
+### F. Files Modified
 
 - `minervini_complete_vnstock.pine` — Main indicator (all changes)
 - `minervini_backtest_vnstock.pine` — Backtest (synced pattern detection + thresholds)

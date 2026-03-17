@@ -894,6 +894,11 @@ bool isWideBar = barRangePct > atrThreshold  // 1.5x ATR
 // Climax Top: Extreme volume + extended price (after significant advance)
 bool climaxTop = isClimaxVolume and (isExtended or isWideBar)
 
+// v3: PARABOLIC LAUNCH + CLIMAX TOP conflict detection
+// When PL conditions met AND Climax Top fires → suppress BUY (exhaustion risk)
+// Day 1 PL (no Climax) still triggers BUY; Day 2+ with Climax = suppressed
+bool plClimaxConflict = isParabolicLaunch and climaxTop
+
 // 2. CHURNING - High volume but little price progress (smart money distributing)
 // Stock struggles to advance despite heavy volume
 float priceProgress5 = (close - close[5]) / close[5] * 100  // 5-day price change
@@ -1131,8 +1136,8 @@ bool minerviniStopOK = stop4_OK  // Minervini method stop <= 8%
 // DUAL SIGNAL SYSTEM:
 // - _RT versions: Real-time for live monitoring & alerts (can repaint within the day)
 // - Non-RT versions: Confirmed signals for bar coloring & history (no repaint)
-bool freshBreakout_RT = isBreakout_RT and hasVolSurge and marketBullish and minerviniStopOK  // Real-time
-bool freshBreakout = isBreakout and hasVolSurge and marketBullish and minerviniStopOK        // Confirmed
+bool freshBreakout_RT = isBreakout_RT and hasVolSurge and marketBullish and minerviniStopOK and not plClimaxConflict  // Real-time; v3: suppress PL+Climax
+bool freshBreakout = isBreakout and hasVolSurge and marketBullish and minerviniStopOK and not plClimaxConflict        // Confirmed; v3: suppress PL+Climax
 
 // Active breakout = already broke out, still in buy zone (for add-on or late entry)
 bool activeBreakout = isInBreakoutZone and marketBullish and minerviniStopOK and not isBreakout_RT
@@ -1356,6 +1361,8 @@ if barstate.islast and showInfoPanel
             entryConclusion := "🔴 NO ENTRY - Stop > 8% (Minervini rule)"
         else if not marketBullish
             entryConclusion := "🟡 WAIT - Market weak, hold off"
+        else if plClimaxConflict
+            entryConclusion := "🔴 PARABOLIC CLIMAX - BUY suppressed! Vol " + str.tostring(volSurgePct, "#") + "% = exhaustion risk"
         else if isBuyNow_RT and rsBasedQualified and not tier12Qualified
             entryConclusion := "🔥 BUY [RS OVERRIDE] - Super stock breakout!"
         else if isBuyNow_RT

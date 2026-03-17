@@ -387,10 +387,20 @@ float stop4_Pct = (entryLevel - stop4_Minervini) / entryLevel * 100
 bool stop4_OK = stop4_Pct <= 8
 bool minerviniStopOK = stop4_OK
 
+// v3: Climax Top detection (for PL conflict suppression) - SYNCED with main indicator
+float distFromMA20 = (close - ma20) / ma20 * 100
+bool isClimaxVolume = volSurgePct >= 400
+bool isExtended = distFromMA20 >= 7.0
+float barRangePct = (high - low) / low * 100
+float atrThreshold_ct = ta.atr(14) / close * 100 * 1.5
+bool isWideBar = barRangePct > atrThreshold_ct
+bool climaxTop = isClimaxVolume and (isExtended or isWideBar)
+bool plClimaxConflict = isParabolicLaunch and climaxTop
+
 // ══════════════════════════════════════════════════════════════════
 // ATL BUY SIGNAL - CLONED (Exact same logic as main indicator)
 // ══════════════════════════════════════════════════════════════════
-bool freshBreakout = isBreakout and hasVolSurge and marketBullish and minerviniStopOK
+bool freshBreakout = isBreakout and hasVolSurge and marketBullish and minerviniStopOK and not plClimaxConflict  // v3: suppress PL+Climax
 bool isQualified = tier12Qualified or rsBasedQualified
 bool isATLzone = isAboveTheLine and not isETL
 bool atlBuySignal = isATLzone and isQualified and freshBreakout and rsStrong
