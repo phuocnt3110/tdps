@@ -1,5 +1,5 @@
 //@version=5
-indicator("Minervini Backtest - Signal Performance", shorttitle="MM_Backtest", overlay=true)
+indicator("Minervini Backtest - Signal Performance v3", shorttitle="MM_Backtest_v3", overlay=true)
 
 // ══════════════════════════════════════════════════════════════════
 // MINERVINI BACKTEST: Signal Performance Tracker
@@ -570,12 +570,20 @@ int bars1Y = 252    // 1 year
 anySignalAtOffset(int n) =>
     atlBuySignal[n] or atlPullbackSignal[n] or atlLowCheatSignal[n] or atlReentrySignal[n] or etlBuySignal[n] or etlPullbackSignal[n] or etlReentrySignal[n] or btlBuySignal[n] or btlPullbackSignal[n] or btlReentrySignal[n]
 
-bool signalT2Ago = bar_index >= barsT2 ? anySignalAtOffset(barsT2) : false
-bool signalT7Ago = bar_index >= barsT7 ? anySignalAtOffset(barsT7) : false
-bool signalT14Ago = bar_index >= barsT14 ? anySignalAtOffset(barsT14) : false
-bool signalT30Ago = bar_index >= barsT30 ? anySignalAtOffset(barsT30) : false
-bool signal6MAgo = bar_index >= bars6M ? anySignalAtOffset(bars6M) : false
-bool signal1YAgo = bar_index >= bars1Y ? anySignalAtOffset(bars1Y) : false
+// Pre-compute function calls on every bar (Pine requires consistent execution)
+bool _anyT2 = anySignalAtOffset(barsT2)
+bool _anyT7 = anySignalAtOffset(barsT7)
+bool _anyT14 = anySignalAtOffset(barsT14)
+bool _anyT30 = anySignalAtOffset(barsT30)
+bool _any6M = anySignalAtOffset(bars6M)
+bool _any1Y = anySignalAtOffset(bars1Y)
+
+bool signalT2Ago = bar_index >= barsT2 ? _anyT2 : false
+bool signalT7Ago = bar_index >= barsT7 ? _anyT7 : false
+bool signalT14Ago = bar_index >= barsT14 ? _anyT14 : false
+bool signalT30Ago = bar_index >= barsT30 ? _anyT30 : false
+bool signal6MAgo = bar_index >= bars6M ? _any6M : false
+bool signal1YAgo = bar_index >= bars1Y ? _any1Y : false
 
 // Get entry price from N bars ago
 float entryT2 = signalT2Ago ? close[barsT2] : na
@@ -596,10 +604,16 @@ float return1Y = signal1YAgo ? (close - entry1Y) / entry1Y * 100 : na
 // Signal type from N bars ago (any ATL type = ATL for counting, including ATL-RE)
 atlSignalAtOffset(int n) =>
     atlBuySignal[n] or atlPullbackSignal[n] or atlLowCheatSignal[n] or atlReentrySignal[n]
-bool atlT2Ago = bar_index >= barsT2 ? atlSignalAtOffset(barsT2) : false
-bool atlT30Ago = bar_index >= barsT30 ? atlSignalAtOffset(barsT30) : false
-bool atl6MAgo = bar_index >= bars6M ? atlSignalAtOffset(bars6M) : false
-bool atl1YAgo = bar_index >= bars1Y ? atlSignalAtOffset(bars1Y) : false
+// Pre-compute function calls on every bar (Pine requires consistent execution)
+bool _atlT2 = atlSignalAtOffset(barsT2)
+bool _atlT30 = atlSignalAtOffset(barsT30)
+bool _atl6M = atlSignalAtOffset(bars6M)
+bool _atl1Y = atlSignalAtOffset(bars1Y)
+
+bool atlT2Ago = bar_index >= barsT2 ? _atlT2 : false
+bool atlT30Ago = bar_index >= barsT30 ? _atlT30 : false
+bool atl6MAgo = bar_index >= bars6M ? _atl6M : false
+bool atl1YAgo = bar_index >= bars1Y ? _atl1Y : false
 
 // Track statistics using arrays
 var float[] arrReturnT2 = array.new_float()
@@ -667,7 +681,8 @@ var float[] arrPnLPct = array.new_float()        // P&L in %
 int historyExitBars = tradeHistoryExit == "T+2" ? barsT2 : tradeHistoryExit == "T+7" ? barsT7 : tradeHistoryExit == "T+14" ? barsT14 : tradeHistoryExit == "T+30" ? barsT30 : tradeHistoryExit == "6M" ? bars6M : bars1Y
 
 // Check for completed trade (signal N bars ago with exit data now) — ALL 10 signal types
-bool historySignalAgo = bar_index >= historyExitBars ? anySignalAtOffset(historyExitBars) : false
+bool _anyHistory = anySignalAtOffset(historyExitBars)
+bool historySignalAgo = bar_index >= historyExitBars ? _anyHistory : false
 bool historyInRange = historySignalAgo and (bar_index - historyExitBars) >= (last_bar_index - lookbackBars)
 
 // Store completed trade details
