@@ -1,5 +1,5 @@
 //@version=5
-indicator("Minervini RS - VN", shorttitle="RS_VN", overlay=false)
+indicator("vn_rsline", shorttitle="RS_VN", overlay=false)
 
 //----------------------------
 // Inputs - VIETNAM STOCK VERSION
@@ -28,11 +28,15 @@ rsSmooth   = ta.sma(rsNorm, smoothLength)
 sectorClose  = sectorSymbol != "" ? request.security(sectorSymbol, timeframe.period, close) : na
 secRsRaw     = not na(sectorClose) and sectorClose != 0.0 ? close / sectorClose : na
 
-secRsHigh    = not na(secRsRaw) ? ta.highest(secRsRaw, rsLookback) : na
-secRsLow     = not na(secRsRaw) ? ta.lowest(secRsRaw, rsLookback) : na
+// Pre-compute on every bar (Pine requires consistent function calls)
+float _secHigh   = ta.highest(secRsRaw, rsLookback)
+float _secLow    = ta.lowest(secRsRaw, rsLookback)
+secRsHigh    = not na(secRsRaw) ? _secHigh : na
+secRsLow     = not na(secRsRaw) ? _secLow : na
 secRsRange   = not na(secRsHigh) and not na(secRsLow) ? secRsHigh - secRsLow : na
 secRsNorm    = not na(secRsRange) and secRsRange != 0.0 ? 100.0 * (secRsRaw - secRsLow) / secRsRange : na
-secRsSmooth  = not na(secRsNorm) ? ta.sma(secRsNorm, smoothLength) : na
+float _secSmooth = ta.sma(secRsNorm, smoothLength)
+secRsSmooth  = not na(secRsNorm) ? _secSmooth : na
 
 bool hasSector = sectorSymbol != "" and showSector and not na(secRsNorm)
 

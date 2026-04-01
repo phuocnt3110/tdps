@@ -1,5 +1,5 @@
 //@version=5
-indicator("Minervini Backtest - Signal Performance v3", shorttitle="MM_Backtest_v3", overlay=true)
+indicator("Minervini Backtest - Signal Performance v3", shorttitle="VN_MM_Backtest_v3", overlay=true)
 
 // ══════════════════════════════════════════════════════════════════
 // MINERVINI BACKTEST: Signal Performance Tracker
