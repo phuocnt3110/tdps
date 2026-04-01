@@ -1,34 +1,52 @@
 //@version=5
-indicator("Minervini RS VNStock", shorttitle="RS_VN", overlay=false)
+indicator("Minervini RS - VN", shorttitle="RS_VN", overlay=false)
 
 //----------------------------
 // Inputs - VIETNAM STOCK VERSION
-// Benchmark: VNINDEX for Vietnam market
 //----------------------------
-benchmarkSymbol = input.symbol("HOSE:VNINDEX", "Benchmark (VNINDEX)")
-smoothLength    = input.int(10, "SMA của RS", minval=1, maxval=50)
+benchmarkSymbol = input.symbol("HOSE:VNINDEX", "Benchmark thị trường", group="RS vs Market")
+sectorSymbol    = input.symbol("", "Benchmark ngành (VD: VNREAL, VNIT)", group="RS vs Sector", tooltip="Để trống nếu không cần so sánh ngành. VD: HOSE:VNREAL, HOSE:VNIT, HOSE:VNFIN")
+showSector      = input.bool(true, "Hiện RS ngành", group="RS vs Sector")
+smoothLength    = input.int(10, "SMA smoothing", minval=1, maxval=50, group="Settings")
 
 //----------------------------
-// RS raw (price / benchmark)
+// RS vs MARKET (price / benchmark)
 //----------------------------
 benchClose = request.security(benchmarkSymbol, timeframe.period, close)
 rsRaw      = benchClose != 0.0 ? close / benchClose : na
 
-// Normalize 0 → 100
 rsLookback = math.min(200, bar_index + 1)
 rsHigh     = ta.highest(rsRaw, rsLookback)
 rsLow      = ta.lowest(rsRaw, rsLookback)
 rsRange    = rsHigh - rsLow
 rsNorm     = rsRange != 0.0 ? 100.0 * (rsRaw - rsLow) / rsRange : na
-
-// Smoothed RS
-rsSmooth = ta.sma(rsNorm, smoothLength)
+rsSmooth   = ta.sma(rsNorm, smoothLength)
 
 //----------------------------
-// Plot
+// RS vs SECTOR (price / sector index)
 //----------------------------
-plot(rsNorm,   "RS (0–100)", color=color.new(color.purple, 0), linewidth=2)
-plot(rsSmooth, "RS SMA",     color=color.new(color.white, 0),  linewidth=1)
+sectorClose  = sectorSymbol != "" ? request.security(sectorSymbol, timeframe.period, close) : na
+secRsRaw     = not na(sectorClose) and sectorClose != 0.0 ? close / sectorClose : na
+
+secRsHigh    = not na(secRsRaw) ? ta.highest(secRsRaw, rsLookback) : na
+secRsLow     = not na(secRsRaw) ? ta.lowest(secRsRaw, rsLookback) : na
+secRsRange   = not na(secRsHigh) and not na(secRsLow) ? secRsHigh - secRsLow : na
+secRsNorm    = not na(secRsRange) and secRsRange != 0.0 ? 100.0 * (secRsRaw - secRsLow) / secRsRange : na
+secRsSmooth  = not na(secRsNorm) ? ta.sma(secRsNorm, smoothLength) : na
+
+bool hasSector = sectorSymbol != "" and showSector and not na(secRsNorm)
+
+//----------------------------
+// Plot - RS vs Market (purple)
+//----------------------------
+plot(rsNorm,   "RS vs Market",     color=color.new(color.purple, 0), linewidth=2)
+plot(rsSmooth, "RS vs Market SMA", color=color.new(color.white, 30), linewidth=1)
+
+//----------------------------
+// Plot - RS vs Sector (orange) — only when sector input is provided
+//----------------------------
+plot(hasSector ? secRsNorm   : na, "RS vs Sector",     color=color.new(color.orange, 0), linewidth=2)
+plot(hasSector ? secRsSmooth : na, "RS vs Sector SMA", color=color.new(color.yellow, 30), linewidth=1)
 
 // Levels
 hline(80, "RS 80 (Leader)", color=color.new(color.green, 70))
