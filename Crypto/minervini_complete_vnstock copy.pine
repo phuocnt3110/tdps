@@ -67,10 +67,7 @@ float ema21 = ta.ema(close, 21)
 // Sell pressure = volume * (high - close) / (high - low)
 float hlRange = high - low
 float buyVol  = hlRange > 0 ? volume * (close - low) / hlRange : volume * 0.5
-float sellVol = hlRange > 0 ? volume * (high - close) / hlRange : volume * 0.5
 float buyPct  = volume > 0 ? buyVol / volume * 100 : 50
-float buyVolMA5  = ta.sma(buyVol, 5)
-float sellVolMA5 = ta.sma(sellVol, 5)
 
 // Relative Strength
 benchClose = request.security(benchmarkSymbol, timeframe.period, close)
@@ -87,7 +84,6 @@ hi52           = ta.highest(high[1], lookback52)  // Exclude current bar
 lo52           = ta.lowest(low[1], lookback52)    // Exclude current bar
 distFrom52High = hi52 != 0.0 ? (close - hi52) / hi52 * 100.0 : na
 isNearHigh     = not na(distFrom52High) and distFrom52High >= -nearHighPct
-aboveLow30pct  = close >= lo52 * 1.3  // 30% above 52W low
 
 price52Ago = bar_index > bars52 ? close[bars52] : na
 perf52w    = not na(price52Ago) and price52Ago != 0.0 ? (close - price52Ago) / price52Ago * 100.0 : na
@@ -444,56 +440,43 @@ bool  isLowCheat = hasVCPchar and tCount >= 2 and atContractionLow and volDryUp 
 // Pattern classification
 string patternName = "NO SETUP"
 int patternScore = 0
-color patternColor = color.gray
 
 if isPowerPlay
     patternName := "POWER PLAY"
     patternScore := 95
-    patternColor := color.fuchsia
 else if isHTF
     patternName := "HIGH TIGHT FLAG"
     patternScore := 90
-    patternColor := color.lime
 else if isVCP
     patternName := "VCP (" + str.tostring(tCount) + "T)"
     patternScore := 85
-    patternColor := color.lime
 else if isCup
     patternName := "CUP & HANDLE"
     patternScore := 80
-    patternColor := color.green
 else if isDoubleBottom
     patternName := "DOUBLE BOTTOM"
     patternScore := 75
-    patternColor := color.green
 else if isFlatBase
     patternName := "FLAT BASE"
     patternScore := 70
-    patternColor := color.teal
 else if isAscending
     patternName := "ASCENDING BASE"
     patternScore := 72  // Legitimate Minervini pattern - qualifies
-    patternColor := color.blue
 else if isParabolicLaunch
     patternName := "PARABOLIC LAUNCH"
     patternScore := 75  // v3: with RS bonus (+10) reaches 85 for tier12
-    patternColor := color.fuchsia
 else if hasVCPchar and pricePosPct >= 50
     patternName := "FORMING..."
     patternScore := 40
-    patternColor := color.yellow
 else if pricePosPct < 50
     patternName := "WEAK POS"
     patternScore := 20
-    patternColor := color.orange
 else if baseDepthPct > 50
     patternName := "TOO DEEP"
     patternScore := 15
-    patternColor := color.red
 else if not volHealthy
     patternName := "DISTRIBUTION"
     patternScore := 10
-    patternColor := color.red
 
 // Component scores
 baseScore = baseDepthPct <= 20 ? 25 : baseDepthPct <= 30 ? 20 : baseDepthPct <= 40 ? 15 : baseDepthPct <= 50 ? 10 : 5  // v3: VN calibrated
@@ -527,7 +510,6 @@ bool tier12Watch = (isStage2 or isStage2OK) and patternScore >= 40
 bool rsVeryStrong = not na(rsNorm) and rsNorm >= 90  // Top 10% RS
 bool rsStrong = not na(rsNorm) and rsNorm >= 80      // Top 20% RS
 bool rsWeak = not na(rsNorm) and rsNorm < 70         // Bottom 30% RS - BLOCK ENTRY
-bool rsAccelerating = not na(rsNorm) and rsNorm > rsNorm[5] and rsNorm > rsNorm[10]  // RS momentum
 bool rsExtreme = not na(rsNorm) and rsNorm >= 95    // Top 5% RS - very rare
 
 // Super Stock Candidate: RS >= 90 + basic Stage 2 conditions
@@ -645,8 +627,6 @@ if close < priorPivot * 0.97
     atlBreakoutPivot := 0.0
 
 // Breakout signals - TRUE only on the bar they triggered
-bool regularBreakout = atlBreakoutBar == bar_index and regularBreakoutCondition
-bool gapBreakout = atlBreakoutBar == bar_index and gapBreakoutCondition
 bool isBreakout = atlBreakoutBar == bar_index  // TRUE only on breakout bar
 
 // Real-time versions for panel display (can show during the day)
@@ -884,7 +864,6 @@ bool volDryUpOnUp = close > close[1] and volume < volMA20 * 0.5  // Weak rally
 // 1. CLIMAX TOP - Extremely high volume = exhaustion/distribution
 // Minervini: Climax top occurs AFTER an extended advance, not on first breakout
 // When volume is TOO high (400%+), smart money is often SELLING into strength
-float priceChange = math.abs(close - open) / open * 100
 float distFromMA20 = (close - ma20) / ma20 * 100  // Distance from MA20 as percentage
 bool isClimaxVolume = volSurgePct >= 400  // 4x average volume
 bool isExtended = distFromMA20 >= 7.0     // Price 7%+ above MA20 (extended advance)
@@ -910,7 +889,6 @@ bool churning = highVol5Days and littleProgress and close > ma50  // Only valid 
 // 3. RS LINE DIVERGENCE - RS weakening while price still rising
 // Early warning: stock losing relative strength vs market
 float rsChange5 = not na(rsNorm) and not na(rsNorm[5]) ? rsNorm - rsNorm[5] : 0
-float rsChange10 = not na(rsNorm) and not na(rsNorm[10]) ? rsNorm - rsNorm[10] : 0
 bool priceUp5 = close > close[5]
 bool rsDown5 = rsChange5 < -5  // RS dropped 5+ points
 bool rsDivergence = priceUp5 and rsDown5  // Price up but RS down = divergence
@@ -1267,8 +1245,9 @@ if zoneMode == "ATL"
     barCol := isPullbackBuyNow ? color.new(color.lime, 0) : barCol
     barCol := isBuyNow ? color.new(color.lime, 0) : barCol
 else if zoneMode == "ETL"
-    // ETL Mode: Yellow base, all buys = Lime
+    // ETL Mode: Yellow base, all buys = Lime, active position = Aqua
     barCol := color.new(color.yellow, 60)
+    barCol := etlBuyTriggered and not isEtlBuyNow ? color.new(color.aqua, 0) : barCol  // Active ETL position (like ATL's isAddHold)
     barCol := isEtlReentryNow ? color.new(color.lime, 0) : barCol
     barCol := isEtlPullbackNow ? color.new(color.lime, 0) : barCol
     barCol := isEtlBuyNow ? color.new(color.lime, 0) : barCol

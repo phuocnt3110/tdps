@@ -1,0 +1,1036 @@
+//@version=5
+indicator("Minervini Backtest - Signal Performance v3", shorttitle="MM_Backtest_v3", overlay=true)
+
+// ══════════════════════════════════════════════════════════════════
+// MINERVINI BACKTEST: Signal Performance Tracker
+// Measures historical performance of BUY signals at T+2, T+30, 6M, 1Y
+// CLONED FROM: minervini_complete_vnstock.pine
+// NOTE: Uses forward-looking data - FOR BACKTEST ONLY, NOT REAL-TIME TRADING
+// ══════════════════════════════════════════════════════════════════
+
+// ==========================
+// INPUTS (Same as main indicator)
+// ==========================
+// Trend inputs
+benchmarkSymbol = input.symbol("HOSE:VNINDEX", "Benchmark (RS)")
+nearHighPct     = input.float(25.0, "Near 52W High Threshold %", minval=1, maxval=50)
+bars52          = input.int(252, "Bars for 52 weeks", minval=50, maxval=400)
+
+// Pattern inputs
+baseLen       = input.int(30, "Base Length (bars)", minval=15, maxval=100)
+atrLen        = input.int(14, "ATR Length")
+vcpSegLen     = input.int(7,  "T-Segment Length")
+pivotLook     = input.int(5,  "Pivot Lookback")
+htfMinGain    = input.float(40.0, "HTF Min Prior Gain %", tooltip="v3: VN calibrated from 80%")
+vcpBaseLen    = input.int(60, "VCP Base Length (bars)", minval=30, maxval=120, tooltip="v3: Longer lookback for VCP contraction detection")
+
+// Weinstein-Darvas inputs (Below The Line mode)
+darvasBoxLen  = input.int(20, "Darvas Box Length (bars)", minval=10, maxval=50)
+darvasMaxWidth = input.float(15.0, "Darvas Max Box Width %", minval=5, maxval=30)
+rsiOversoldLookback = input.int(100, "RSI Oversold Lookback (bars)", minval=20, maxval=200)
+
+// Backtest specific inputs
+showSignalMarkers = input.bool(true, "Show Signal Markers on Chart", group="Backtest Settings")
+lookbackYears = input.int(5, "Lookback Period (Years)", minval=1, maxval=20, group="Backtest Settings", tooltip="Only count signals within this many years from today")
+showStatsPanel = input.bool(true, "Show Statistics Panel", group="Backtest Settings")
+showTradeHistory = input.bool(true, "Show Trade History Panel", group="Backtest Settings")
+tradeHistoryExit = input.string("T+2", "Exit Timeframe for History", options=["T+2", "T+7", "T+14", "T+30", "6M", "1Y"], group="Backtest Settings")
+
+// Calculate lookback in bars (252 trading days per year)
+int lookbackBars = lookbackYears * 252
+bool isWithinLookback = bar_index >= (last_bar_index - lookbackBars)
+
+// ══════════════════════════════════════════════════════════════════
+// PART 1: TREND TEMPLATE (Stage 2 Analysis) - CLONED
+// ══════════════════════════════════════════════════════════════════
+
+// Moving averages
+ma20  = ta.sma(close, 20)
+ma50  = ta.sma(close, 50)
+ma150 = ta.sma(close, 150)
+ma200 = ta.sma(close, 200)
+volMa = ta.sma(volume, 20)
+float ema10 = ta.ema(close, 10)
+
+// Relative Strength
+benchClose = request.security(benchmarkSymbol, timeframe.period, close)
+rsRaw      = benchClose != 0.0 ? close / benchClose : na
+rsLookback = math.min(200, bar_index + 1)
+rsHigh     = ta.highest(rsRaw, rsLookback)
+rsLow      = ta.lowest(rsRaw, rsLookback)
+rsRange    = rsHigh - rsLow
+rsNorm     = rsRange != 0.0 ? 100.0 * (rsRaw - rsLow) / rsRange : na
+
+// 52-week metrics - ANTI-REPAINT: Use [1] to match main indicator
+lookback52     = math.min(bars52, bar_index + 1)
+hi52           = ta.highest(high[1], lookback52)  // Exclude current bar
+lo52           = ta.lowest(low[1], lookback52)    // Exclude current bar
+distFrom52High = hi52 != 0.0 ? (close - hi52) / hi52 * 100.0 : na
+isNearHigh     = not na(distFrom52High) and distFrom52High >= -nearHighPct
+aboveLow30pct  = close >= lo52 * 1.3
+
+price52Ago = bar_index > bars52 ? close[bars52] : na
+perf52w    = not na(price52Ago) and price52Ago != 0.0 ? (close - price52Ago) / price52Ago * 100.0 : na
+
+// Trend conditions (Minervini Trend Template)
+condPriceAboveAll = close > ma50 and close > ma150 and close > ma200
+condMaStacked     = ma50 > ma150 and ma150 > ma200
+condMaSlope       = ma50 > ma50[5] and ma150 >= ma150[5] and ma200 >= ma200[5]
+condRsUp          = rsNorm > rsNorm[5]
+condVolStrong     = volume > volMa
+
+// Trend Score (max 10)
+trendScore = 0
+trendScore += condPriceAboveAll ? 2 : 0
+trendScore += condMaStacked     ? 2 : 0
+trendScore += condMaSlope       ? 2 : 0
+trendScore += isNearHigh        ? 2 : 0
+trendScore += condRsUp          ? 1 : 0
+trendScore += condVolStrong     ? 1 : 0
+
+isStage2   = trendScore >= 8
+isStage2OK = trendScore >= 5 and trendScore < 8
+
+// ══════════════════════════════════════════════════════════════════
+// ABOVE THE LINE / BELOW THE LINE DETECTION - CLONED
+// ══════════════════════════════════════════════════════════════════
+bool isAboveTheLine = condPriceAboveAll and condMaStacked
+bool isBelowTheLine = not isAboveTheLine
+bool switchToATL = isAboveTheLine and not isAboveTheLine[1]
+
+// ══════════════════════════════════════════════════════════════════
+// WEINSTEIN STAGE ANALYSIS (For BTL Mode) - CLONED
+// ══════════════════════════════════════════════════════════════════
+float ma30w = ta.sma(close, 150)
+float ma30wSlope = ma30w - ma30w[10]
+
+bool wStage1 = math.abs(close - ma30w) / ma30w * 100 < 5 and math.abs(ma30wSlope) / ma30w * 100 < 1
+bool wStage2Early = close > ma30w and ma30wSlope > 0 and close > ma30w * 1.02
+bool wStage4 = close < ma30w and ma30wSlope < 0
+
+// Stage 1 Breakout (transition to Stage 2)
+bool wStage1Breakout = close > ma30w and close[1] <= ma30w[1] and volume > volMa * 1.3
+// Stage 3: Topping - EXCLUDES other stages, unified with main indicator
+bool wStage3 = close > ma30w and math.abs(ma30wSlope) / ma30w * 100 < 0.5 and not wStage1 and not wStage2Early and not wStage1Breakout
+
+// ══════════════════════════════════════════════════════════════════
+// ETL ZONE DETECTION - SYNCED with main indicator
+// ══════════════════════════════════════════════════════════════════
+var int lastSwitchToATLBar = 0
+if switchToATL
+    lastSwitchToATLBar := bar_index
+int barsSinceATLSwitch = lastSwitchToATLBar > 0 ? bar_index - lastSwitchToATLBar : 999
+
+bool etlCond1 = isBelowTheLine and (wStage2Early or wStage1Breakout)
+bool etlCond2 = isAboveTheLine and barsSinceATLSwitch <= 30 and not isStage2
+bool etlCond3 = isBelowTheLine and not na(ma200) and close > ma200 and ma30wSlope > 0 and (not na(ma50) and not na(ma150) and ma150 > 0 ? (ma50 - ma150) / ma150 * 100 > -3 : false)
+bool isETL = etlCond1 or etlCond2 or etlCond3
+string zoneMode = isAboveTheLine and not isETL ? "ATL" : isETL ? "ETL" : "BTL"
+
+// Zone transition detection (mutually exclusive, based on zoneMode)
+bool zoneToATL = zoneMode == "ATL" and zoneMode[1] != "ATL"
+bool zoneToETL = zoneMode == "ETL" and zoneMode[1] != "ETL"
+bool zoneToBTL = zoneMode == "BTL" and zoneMode[1] != "BTL"
+
+// ══════════════════════════════════════════════════════════════════
+// DARVAS BOX DETECTION (For BTL Mode) - CLONED
+// ══════════════════════════════════════════════════════════════════
+float darvasHigh = ta.highest(high[1], darvasBoxLen)  // ANTI-REPAINT: match main indicator
+float darvasLow = ta.lowest(low[1], darvasBoxLen)     // ANTI-REPAINT: match main indicator
+float darvasWidth = (darvasHigh - darvasLow) / darvasLow * 100
+bool validDarvasBox = darvasWidth <= darvasMaxWidth and darvasWidth >= 3
+
+// Darvas Breakout - ANTI-REPAINT: var mechanism SYNCED with main indicator
+bool darvasBreakoutCondition = close > darvasHigh and close[1] <= darvasHigh
+var bool darvasBreakoutTriggered = false
+var int darvasBreakoutBar = 0
+
+if darvasBreakoutCondition and not darvasBreakoutCondition[1]
+    darvasBreakoutTriggered := true
+    darvasBreakoutBar := bar_index
+
+if close < darvasHigh * 0.95
+    darvasBreakoutTriggered := false
+    darvasBreakoutBar := 0
+
+bool darvasBreakout = darvasBreakoutBar == bar_index
+bool darvasVolConfirm = volume > volMa * 1.5
+
+// BTL ENHANCEMENTS - CLONED from main indicator
+// 1. Weekly RSI Oversold - ANTI-REPAINT: [1] = previous completed week
+float rsiWeekly = request.security(syminfo.tickerid, "W", ta.rsi(close, 14)[1])
+bool weeklyOversold = rsiWeekly < 30
+int barsSinceOversold = ta.barssince(weeklyOversold)
+bool wasOversoldRecently = not na(barsSinceOversold) and barsSinceOversold <= rsiOversoldLookback
+
+// 2. EMA Cross
+float ema12 = ta.ema(close, 12)
+float ema36 = ta.ema(close, 36)
+bool emaCrossUp = ta.crossover(ema12, ema36)
+bool emaAbove = ema12 > ema36
+
+// 3. Market Stage Check
+float indexMA30w = request.security(benchmarkSymbol, timeframe.period, ta.sma(close, 150))
+float indexSlope = indexMA30w - indexMA30w[10]
+bool marketStage4 = benchClose < indexMA30w and indexSlope < 0
+bool marketOKforBTL = not marketStage4
+
+// 5. BTL Exit Signals - SYNCED with main indicator (needed for BTL buy reset)
+bool btlStopHit = close < darvasLow * 0.98
+bool btlEnterStage4 = close < ma30w and close[1] >= ma30w[1]
+
+// Unified BTL BUY Condition - SYNCED with main indicator (ALL must be true)
+bool btlDarvasOK = validDarvasBox and darvasBreakout and darvasVolConfirm
+bool btlRsiOK = wasOversoldRecently
+bool btlEmaOK = emaAbove
+// BTL entry-level filters (Stop & R:R) - SYNCED with main indicator
+float btlStopPctCalc = close > darvasLow ? (close - darvasLow) / close * 100 : 99
+bool btlStopOK = btlStopPctCalc <= 10  // Max 10% stop for BTL
+float btlRRcalc = btlStopPctCalc > 0 ? 20.0 / btlStopPctCalc : 0  // TP 20%
+bool btlRRok = btlRRcalc >= 2.0  // Min 2:1 R:R
+bool btlBuyCondition = isBelowTheLine and marketOKforBTL and btlStopOK and btlRRok and btlDarvasOK and btlRsiOK and btlEmaOK and not wStage4
+
+// BTL Buy Signal - var anti-repaint SYNCED with main indicator
+var bool btlBuyTriggered = false
+var int btlBuyBar = 0
+
+if btlBuyCondition and not btlBuyCondition[1]
+    btlBuyTriggered := true
+    btlBuyBar := bar_index
+
+if btlStopHit or btlEnterStage4 or (close < darvasLow * 0.95)
+    btlBuyTriggered := false
+    btlBuyBar := 0
+
+bool btlBuySignal = btlBuyBar == bar_index
+
+// ══════════════════════════════════════════════════════════════════
+// PART 2: BASE/SETUP QUALITY (Pattern Detection) - ATL Mode - CLONED
+// ══════════════════════════════════════════════════════════════════
+
+// Core metrics - ANTI-REPAINT: Use [1] to match main indicator
+baseHigh = ta.highest(high[1], baseLen)  // Exclude current bar
+baseLow  = ta.lowest(low[1], baseLen)    // Exclude current bar
+baseDepthPct = (baseHigh - baseLow) / baseHigh * 100
+pricePosPct  = (close - baseLow) / (baseHigh - baseLow) * 100
+pivotDist    = (baseHigh - close) / baseHigh * 100
+
+// Prior trend
+priorLow  = ta.lowest(low[baseLen], baseLen)
+priorGain = (baseHigh - priorLow) / priorLow * 100
+
+// VCP-specific: longer lookback for contraction depth (v3)
+vcpBaseHigh = ta.highest(high[1], vcpBaseLen)
+vcpBaseLow  = ta.lowest(low[1], vcpBaseLen)
+vcpBaseDepth = vcpBaseHigh > 0 ? (vcpBaseHigh - vcpBaseLow) / vcpBaseHigh * 100 : 0
+
+// VCP (T-Count)
+atrPct = ta.atr(atrLen) / close * 100
+atr_T1 = ta.sma(atrPct, vcpSegLen * 4)
+atr_T2 = ta.sma(atrPct, vcpSegLen * 3)
+atr_T3 = ta.sma(atrPct, vcpSegLen * 2)
+atr_T4 = ta.sma(atrPct, vcpSegLen)
+
+t1 = atr_T1 > atr_T2
+t2 = atr_T2 > atr_T3
+t3 = atr_T3 > atr_T4
+tCount = (t1 ? 1 : 0) + (t2 ? 1 : 0) + (t3 ? 1 : 0)
+hasVCPchar = tCount >= 2
+
+// Volume
+upVol   = close > close[1] ? volume : 0
+downVol = close < close[1] ? volume : 0
+upVolMA   = ta.sma(upVol, 10)
+downVolMA = ta.sma(downVol, 10)
+volMA20 = ta.sma(volume, 20)
+volMA50 = ta.sma(volume, 50)
+volDryUp = volMA20 < volMA50 * 1.0    // v3: VN calibrated from 0.8
+volSuperDry = volMA20 < volMA50 * 0.7  // v3: bonus for true supply exhaustion
+accumRatio = upVolMA / math.max(downVolMA, 1)
+volHealthy = upVolMA >= downVolMA
+
+// Tight action
+rangePct = (high - low) / close * 100
+rangeMA5 = ta.sma(rangePct, 5)
+rangeMA20 = ta.sma(rangePct, 20)
+tightnessRatio = rangeMA5 / rangeMA20
+higherLows = ta.lowest(low[1], pivotLook) >= ta.lowest(low[1], pivotLook * 2)  // ANTI-REPAINT
+isTight = tightnessRatio < 1.3 and higherLows  // v3: VN calibrated from 0.9
+
+// Pattern detection - CLONED - v3: VN calibrated thresholds
+isHTF = priorGain >= htfMinGain and baseDepthPct <= 25 and baseDepthPct >= 10 and tightnessRatio < 0.8 and pricePosPct >= 70  // v3: tightness 0.6→0.8
+isCup = baseDepthPct >= 15 and baseDepthPct <= 65 and pricePosPct >= 70 and tightnessRatio < 1.2 and tCount >= 1 and volDryUp  // v3: tightness 0.85→1.2
+low1 = ta.lowest(low[1], baseLen / 2)  // ANTI-REPAINT
+low2 = ta.lowest(low[baseLen/2], baseLen / 2)
+hasWShape = math.abs(low1 - low2) / low1 * 100 < 5
+isDoubleBottom = hasWShape and baseDepthPct >= 15 and baseDepthPct <= 50 and pricePosPct >= 60 and hasVCPchar
+isFlatBase = baseDepthPct <= 20 and pricePosPct >= 80 and volHealthy  // v3: depth 15→20
+pivotLow1 = ta.lowest(low[1], pivotLook)  // ANTI-REPAINT
+pivotLow2 = ta.lowest(low[pivotLook], pivotLook)
+pivotLow3 = ta.lowest(low[pivotLook*2], pivotLook)
+isAscending = pivotLow1 > pivotLow2 and pivotLow2 > pivotLow3 and baseDepthPct <= 40 and pricePosPct >= 50  // v3: depth 35→40
+isPowerPlay = pivotDist <= 3 and tightnessRatio < 0.7 and volDryUp and hasVCPchar  // v3: tightness 0.5→0.7
+isVCP = hasVCPchar and vcpBaseDepth <= 40 and pricePosPct >= 70 and isTight and volDryUp  // v3: uses vcpBaseLen=60, depth 35→40
+
+// PARABOLIC LAUNCH Detection (v3 - VN market momentum pattern)
+// Designed for stocks like GTD/CET/TIN with explosive moves from deep bases
+float rsAccel10 = not na(rsNorm) and not na(rsNorm[10]) ? rsNorm - rsNorm[10] : 0
+bool plRsOK = not na(rsNorm) and rsNorm >= 90
+bool plRsAccelOK = rsAccel10 >= 30
+bool plVolExplosion = volume >= volMA20 * 2.0 or (not na(volMA20[1]) and volume[1] >= nz(volMA20[1]) * 2.0) or (not na(volMA20[2]) and volume[2] >= nz(volMA20[2]) * 2.0)
+int plUpDays = (close > close[1] ? 1 : 0) + (close[1] > close[2] ? 1 : 0) + (close[2] > close[3] ? 1 : 0) + (close[3] > close[4] ? 1 : 0) + (close[4] > close[5] ? 1 : 0)
+bool plMomentumOK = plUpDays >= 3
+// Consecutive 5%+ gains filter (reduces false positives: BIG, TTF)
+bool d5p1 = close[1] > 0 ? (close - close[1]) / close[1] * 100 >= 5 : false
+bool d5p2 = close[2] > 0 ? (close[1] - close[2]) / close[2] * 100 >= 5 : false
+bool d5p3 = close[3] > 0 ? (close[2] - close[3]) / close[3] * 100 >= 5 : false
+bool d5p4 = close[4] > 0 ? (close[3] - close[4]) / close[4] * 100 >= 5 : false
+bool plConsec5pct = (d5p1 and d5p2) or (d5p2 and d5p3) or (d5p3 and d5p4)
+bool plZoneOK = (isAboveTheLine and barsSinceATLSwitch <= 15) or isETL
+bool plTsOK = trendScore >= 7
+bool plDeepBase = vcpBaseDepth >= 35  // Uses 60-bar lookback
+bool isParabolicLaunch = plRsOK and plRsAccelOK and plVolExplosion and plMomentumOK and plConsec5pct and plZoneOK and plTsOK and plDeepBase
+
+// Pattern Score - CLONED - v3: added PARABOLIC LAUNCH
+int patternScore = 0
+if isPowerPlay
+    patternScore := 95
+else if isHTF
+    patternScore := 90
+else if isVCP
+    patternScore := 85
+else if isCup
+    patternScore := 80
+else if isDoubleBottom
+    patternScore := 75
+else if isFlatBase
+    patternScore := 70
+else if isAscending
+    patternScore := 72
+else if isParabolicLaunch
+    patternScore := 75  // v3: with RS bonus (+10) reaches 85 for tier12
+else if hasVCPchar and pricePosPct >= 50
+    patternScore := 40
+else if pricePosPct < 50
+    patternScore := 20
+else if baseDepthPct > 50
+    patternScore := 15
+else if not volHealthy
+    patternScore := 10
+
+// RS Bonus - CLONED
+int rsBonus = not na(rsNorm) and rsNorm >= 90 ? 10 : not na(rsNorm) and rsNorm >= 80 ? 5 : 0
+patternScore := patternScore + rsBonus
+
+// Tier qualification - CLONED
+bool tier12Qualified = isStage2 and patternScore >= 77  // SYNCED with main indicator (was 70, should be 77)
+bool tier12Watch = (isStage2 or isStage2OK) and patternScore >= 40
+
+// Super Stock Detection - CLONED
+bool rsVeryStrong = not na(rsNorm) and rsNorm >= 90
+bool rsStrong = not na(rsNorm) and rsNorm >= 80      // Top 20% RS - SYNCED with main indicator
+bool rsWeak = not na(rsNorm) and rsNorm < 70
+bool rsExtreme = not na(rsNorm) and rsNorm >= 95
+bool superStockCandidate = rsVeryStrong and isStage2OK and condPriceAboveAll and (condMaStacked or rsExtreme)
+bool rsBasedQualified = superStockCandidate and patternScore >= 50
+
+// ══════════════════════════════════════════════════════════════════
+// BREAKOUT DETECTION - CLONED
+// ══════════════════════════════════════════════════════════════════
+float priorPivot = baseHigh  // baseHigh already excludes current bar via [1]
+float gapPct = (open - close[1]) / close[1] * 100
+
+bool regularBreakoutCondition = close > priorPivot and close[1] <= priorPivot
+bool gapBreakoutCondition = open > priorPivot and close[1] <= priorPivot and gapPct >= 2
+
+// Expanded breakout state tracking - SYNCED with main indicator
+var bool atlBreakoutTriggered = false
+var int atlBreakoutBar = 0
+var float atlBreakoutPivot = 0.0
+
+bool isNewHigherPivot = priorPivot > atlBreakoutPivot * 1.005
+bool isFirstBreakout = not atlBreakoutTriggered and (regularBreakoutCondition or gapBreakoutCondition)
+bool isBreakoutOnNewPivot = atlBreakoutTriggered and isNewHigherPivot and (regularBreakoutCondition or gapBreakoutCondition)
+
+if isFirstBreakout or isBreakoutOnNewPivot
+    atlBreakoutTriggered := true
+    atlBreakoutBar := bar_index
+    atlBreakoutPivot := priorPivot
+
+if close < priorPivot * 0.97
+    atlBreakoutTriggered := false
+    atlBreakoutBar := 0
+    atlBreakoutPivot := 0.0
+
+bool regularBreakout = atlBreakoutBar == bar_index and regularBreakoutCondition
+bool gapBreakout = atlBreakoutBar == bar_index and gapBreakoutCondition
+bool isBreakout = atlBreakoutBar == bar_index
+bool isInBreakoutZone = atlBreakoutTriggered and close > priorPivot
+
+// Volume Surge - CLONED
+float volSurgePct = volume / volMA20 * 100
+bool hasVolSurge = volSurgePct >= 150
+
+// Market Condition - CLONED
+float benchMA50 = request.security(benchmarkSymbol, timeframe.period, ta.sma(close, 50))
+bool marketBullish = benchClose > benchMA50
+
+// Stop Loss - CLONED (Minervini method)
+float atrValue = ta.atr(14)
+float entryLevel = baseHigh
+float vcpTightStop = ta.lowest(low[1], vcpSegLen) * 0.99  // ANTI-REPAINT
+float handleLow = ta.lowest(low[1], 5) * 0.99  // ANTI-REPAINT
+float fixedStop = entryLevel * 0.93
+float minerviniStop = math.max(vcpTightStop, fixedStop)
+float stop4_Minervini = isVCP ? vcpTightStop : isCup ? handleLow : isDoubleBottom ? pivotLow3 * 0.99 : minerviniStop
+float stop4_Pct = (entryLevel - stop4_Minervini) / entryLevel * 100
+bool stop4_OK = stop4_Pct <= 8
+bool minerviniStopOK = stop4_OK
+
+// v3: Climax Top detection (for PL conflict suppression) - SYNCED with main indicator
+float distFromMA20 = (close - ma20) / ma20 * 100
+bool isClimaxVolume = volSurgePct >= 400
+bool isExtended = distFromMA20 >= 7.0
+float barRangePct = (high - low) / low * 100
+float atrThreshold_ct = ta.atr(14) / close * 100 * 1.5
+bool isWideBar = barRangePct > atrThreshold_ct
+bool climaxTop = isClimaxVolume and (isExtended or isWideBar)
+bool plClimaxConflict = isParabolicLaunch and climaxTop
+
+// ══════════════════════════════════════════════════════════════════
+// ATL BUY SIGNAL - CLONED (Exact same logic as main indicator)
+// ══════════════════════════════════════════════════════════════════
+bool freshBreakout = isBreakout and hasVolSurge and marketBullish and minerviniStopOK and not plClimaxConflict  // v3: suppress PL+Climax
+bool isQualified = tier12Qualified or rsBasedQualified
+bool isATLzone = isAboveTheLine and not isETL
+bool atlBuySignal = isATLzone and isQualified and freshBreakout and rsStrong
+
+// ══════════════════════════════════════════════════════════════════
+// PULLBACK BUY DETECTION v2 - SYNCED with main indicator
+// ══════════════════════════════════════════════════════════════════
+float ema21 = ta.ema(close, 21)
+int barsSinceBreakout = atlBreakoutTriggered ? bar_index - atlBreakoutBar : 999
+bool recentBreakout = atlBreakoutTriggered and barsSinceBreakout >= 2 and barsSinceBreakout <= 20
+
+bool isShallowPB = barsSinceBreakout <= 10
+bool isDeepPB    = barsSinceBreakout > 10 and barsSinceBreakout <= 20
+float pullbackSupportShallow = math.max(ema10, atlBreakoutPivot * 0.97)
+float pullbackSupportDeep    = math.max(ema21, atlBreakoutPivot * 0.93)
+float pullbackSupport = isDeepPB ? pullbackSupportDeep : pullbackSupportShallow
+bool pricePulledBack  = close <= atlBreakoutPivot * 1.05
+bool priceAboveSupport = close >= pullbackSupport
+bool pullbackVolDry   = volume < volMA50 * 0.7
+bool isBouncing       = close > open and close > close[1]
+bool pullbackVolDry1  = volume[1] < volMA50 * 0.7
+
+bool isPullbackBuy = recentBreakout and pricePulledBack and priceAboveSupport and pullbackVolDry1 and isBouncing and marketBullish
+bool isPullbackBuy_RT = recentBreakout and pricePulledBack and priceAboveSupport and (pullbackVolDry or pullbackVolDry1) and isBouncing and marketBullish
+float pullbackSwingLow = ta.lowest(low[1], isDeepPB ? 8 : 5)  // ANTI-REPAINT
+float pullbackStop     = math.max(pullbackSwingLow * 0.99, atlBreakoutPivot * 0.95)
+float pullbackStopPct  = close > 0 ? (close - pullbackStop) / close * 100 : 99
+bool  pullbackStopOK   = pullbackStopPct <= 7
+
+bool atlPullbackSignal = isATLzone and (tier12Qualified or rsBasedQualified) and isPullbackBuy and pullbackStopOK and rsStrong
+
+// ══════════════════════════════════════════════════════════════════
+// LOW-CHEAT PIVOT DETECTION - CLONED from main indicator
+// ══════════════════════════════════════════════════════════════════
+float lastContractionLow  = ta.lowest(low[1], vcpSegLen)   // ANTI-REPAINT
+float lastContractionHigh = ta.highest(high[1], vcpSegLen)  // ANTI-REPAINT
+float contractionRange    = lastContractionHigh > 0 ? (lastContractionHigh - lastContractionLow) / lastContractionHigh * 100 : 100
+bool  atContractionLow    = close <= lastContractionLow * 1.02
+bool  isLowCheat = hasVCPchar and tCount >= 2 and atContractionLow and volDryUp and isTight and contractionRange <= 8 and pricePosPct >= 50
+
+float lowCheatStop    = lastContractionLow * 0.98
+float lowCheatStopPct = close > 0 ? (close - lowCheatStop) / close * 100 : 99
+bool  lowCheatStopOK  = lowCheatStopPct <= 4
+bool  lowCheatEntry   = isLowCheat and lowCheatStopOK and marketBullish and not atlBreakoutTriggered
+
+bool atlLowCheatSignal = isATLzone and (tier12Qualified or rsBasedQualified) and lowCheatEntry and rsStrong
+
+// ══════════════════════════════════════════════════════════════════
+// RE-ENTRY AFTER STOP-OUT v2 - SYNCED with main indicator
+// ══════════════════════════════════════════════════════════════════
+var bool wasStoppedOut = false
+var int stoppedOutBar = 0
+bool breakoutJustReset = not atlBreakoutTriggered and atlBreakoutTriggered[1]
+if breakoutJustReset
+    wasStoppedOut := true
+    stoppedOutBar := bar_index
+int barsSinceStop = wasStoppedOut ? bar_index - stoppedOutBar : 999
+bool recentStopOut = wasStoppedOut and barsSinceStop >= 3 and barsSinceStop <= 30
+bool reentryStructureOK = close > ma50 and not wStage4
+bool reentryRsOK = not na(rsNorm) and rsNorm >= 70
+bool reentryBounce = close > open and close > close[1]
+bool reentryVolOK = volume > volMa * 0.8
+bool isReentrySetup = recentStopOut and reentryStructureOK and reentryRsOK and reentryBounce and reentryVolOK and marketBullish
+float reentrySwingLow = ta.lowest(low[1], 5)  // ANTI-REPAINT
+float reentryStop = reentrySwingLow * 0.98
+float reentryStopPct = close > 0 ? (close - reentryStop) / close * 100 : 99
+bool reentryStopOK = reentryStopPct <= 8 and reentryStopPct >= 3
+bool isReentryBuy = isReentrySetup and reentryStopOK
+bool atlReentrySignal = isATLzone and isReentryBuy
+if isReentryBuy or barsSinceStop > 40
+    wasStoppedOut := false
+    stoppedOutBar := 0
+
+// ══════════════════════════════════════════════════════════════════
+// ETL BUY SIGNAL - SYNCED with main indicator
+// ══════════════════════════════════════════════════════════════════
+bool etlRsOK = not na(rsNorm) and rsNorm >= 50
+bool etlVolOK = volSurgePct >= 120
+bool etlPatOK = patternScore >= 30 or emaAbove
+bool etlStopOK_bo = stop4_Pct <= 10
+bool etlBreakout = (isBreakout or darvasBreakout) and etlVolOK
+bool etlMarketOK = not marketStage4
+bool etlBuyCondition = isETL and etlBreakout and etlRsOK and etlPatOK and etlStopOK_bo and etlMarketOK and not wStage4
+var bool etlBuyTriggered = false
+var int etlBuyBar = 0
+if etlBuyCondition and not etlBuyCondition[1]
+    etlBuyTriggered := true
+    etlBuyBar := bar_index
+if close < priorPivot * 0.93 or wStage4
+    etlBuyTriggered := false
+    etlBuyBar := 0
+bool etlBuySignal = etlBuyBar == bar_index
+
+// ETL Pullback - SYNCED
+bool etlPBStopOK = pullbackStopPct <= 8
+bool etlPullbackSignal = isETL and isPullbackBuy and etlPBStopOK and etlRsOK
+
+// ETL Re-entry - SYNCED
+bool etlReRsOK = not na(rsNorm) and rsNorm >= 50
+bool isEtlReentrySetup = recentStopOut and reentryStructureOK and etlReRsOK and reentryBounce and reentryVolOK and etlMarketOK
+bool etlReentrySignal = isETL and isEtlReentrySetup and reentryStopOK
+
+// ══════════════════════════════════════════════════════════════════
+// BTL PULLBACK & RE-ENTRY - SYNCED with main indicator
+// ══════════════════════════════════════════════════════════════════
+int barsSinceDarvasBO = darvasBreakoutTriggered ? bar_index - darvasBreakoutBar : 999
+bool recentDarvasBO = darvasBreakoutTriggered and barsSinceDarvasBO >= 2 and barsSinceDarvasBO <= 15
+float btlPBSupport = math.max(not na(ema10) ? ema10 : 0, darvasLow)
+bool btlPricePulledBack = close <= darvasHigh * 1.03
+bool btlPriceAboveSupport = close >= btlPBSupport
+bool btlPBVolDry = volume[1] < volMA50 * 0.7
+bool btlPBBounce = close > open and close > close[1]
+bool isBtlPullbackRaw = recentDarvasBO and btlPricePulledBack and btlPriceAboveSupport and btlPBVolDry and btlPBBounce and marketOKforBTL
+float btlPBSwingLow = ta.lowest(low[1], 5)  // ANTI-REPAINT
+float btlPBStop = math.max(btlPBSwingLow * 0.99, darvasLow * 0.98)
+float btlPBStopPct = close > 0 ? (close - btlPBStop) / close * 100 : 99
+bool btlPBStopOK = btlPBStopPct <= 10 and btlPBStopPct >= 2
+bool btlPullbackSignal = isBelowTheLine and not isETL and isBtlPullbackRaw and btlPBStopOK
+
+// BTL Re-entry
+var bool btlWasStoppedOut = false
+var int btlStoppedOutBar = 0
+bool btlJustStopped = not btlBuyTriggered and btlBuyTriggered[1] and btlStopHit
+if btlJustStopped
+    btlWasStoppedOut := true
+    btlStoppedOutBar := bar_index
+int barsSinceBtlStop = btlWasStoppedOut ? bar_index - btlStoppedOutBar : 999
+bool recentBtlStopOut = btlWasStoppedOut and barsSinceBtlStop >= 3 and barsSinceBtlStop <= 30
+bool btlReStructureOK = (not na(ma150) and close > ma150) or close > darvasLow
+bool btlReBounce = close > open and close > close[1]
+bool btlReVolOK = volume > volMa * 0.8
+bool isBtlReentrySetup = recentBtlStopOut and btlReStructureOK and btlReBounce and btlReVolOK and marketOKforBTL and emaAbove and not wStage4
+float btlReSwingLow = ta.lowest(low[1], 5)  // ANTI-REPAINT
+float btlReStop = btlReSwingLow * 0.98
+float btlReStopPct = close > 0 ? (close - btlReStop) / close * 100 : 99
+bool btlReStopOK = btlReStopPct <= 10 and btlReStopPct >= 3
+bool btlReentrySignal = isBelowTheLine and not isETL and isBtlReentrySetup and btlReStopOK
+if btlReentrySignal or barsSinceBtlStop > 40
+    btlWasStoppedOut := false
+    btlStoppedOutBar := 0
+
+// ══════════════════════════════════════════════════════════════════
+// COMBINED BUY SIGNAL (All 3 zones: ATL + ETL + BTL)
+// ══════════════════════════════════════════════════════════════════
+bool anyBuySignal = atlBuySignal or atlPullbackSignal or atlLowCheatSignal or atlReentrySignal or etlBuySignal or etlPullbackSignal or etlReentrySignal or btlBuySignal or btlPullbackSignal or btlReentrySignal
+string signalType = atlBuySignal ? "ATL" : atlPullbackSignal ? "ATL-PB" : atlLowCheatSignal ? "ATL-LC" : atlReentrySignal ? "ATL-RE" : etlBuySignal ? "ETL" : etlPullbackSignal ? "ETL-PB" : etlReentrySignal ? "ETL-RE" : btlBuySignal ? "BTL" : btlPullbackSignal ? "BTL-PB" : btlReentrySignal ? "BTL-RE" : "NONE"
+
+// ══════════════════════════════════════════════════════════════════
+// PERFORMANCE CALCULATION (Forward-looking - OK for backtest)
+// ══════════════════════════════════════════════════════════════════
+
+// Timeframe definitions (in bars)
+int barsT2 = 2      // T+2
+int barsT7 = 7      // T+7 (1 week)
+int barsT14 = 14    // T+14 (2 weeks)
+int barsT30 = 30    // T+30 (~1.5 months)
+int bars6M = 126    // 6 months
+int bars1Y = 252    // 1 year
+
+// ══════════════════════════════════════════════════════════════════
+// REVERSE LOOKUP APPROACH (Pine Script doesn't allow negative offsets)
+// Instead of looking forward from signal, we look backward from current bar
+// to see if there was a signal N bars ago, then calculate return
+// ══════════════════════════════════════════════════════════════════════
+
+// Check if there was a signal N bars ago (looking backward) — ALL 10 signal types
+anySignalAtOffset(int n) =>
+    atlBuySignal[n] or atlPullbackSignal[n] or atlLowCheatSignal[n] or atlReentrySignal[n] or etlBuySignal[n] or etlPullbackSignal[n] or etlReentrySignal[n] or btlBuySignal[n] or btlPullbackSignal[n] or btlReentrySignal[n]
+
+// Pre-compute function calls on every bar (Pine requires consistent execution)
+bool _anyT2 = anySignalAtOffset(barsT2)
+bool _anyT7 = anySignalAtOffset(barsT7)
+bool _anyT14 = anySignalAtOffset(barsT14)
+bool _anyT30 = anySignalAtOffset(barsT30)
+bool _any6M = anySignalAtOffset(bars6M)
+bool _any1Y = anySignalAtOffset(bars1Y)
+
+bool signalT2Ago = bar_index >= barsT2 ? _anyT2 : false
+bool signalT7Ago = bar_index >= barsT7 ? _anyT7 : false
+bool signalT14Ago = bar_index >= barsT14 ? _anyT14 : false
+bool signalT30Ago = bar_index >= barsT30 ? _anyT30 : false
+bool signal6MAgo = bar_index >= bars6M ? _any6M : false
+bool signal1YAgo = bar_index >= bars1Y ? _any1Y : false
+
+// Get entry price from N bars ago
+float entryT2 = signalT2Ago ? close[barsT2] : na
+float entryT7 = signalT7Ago ? close[barsT7] : na
+float entryT14 = signalT14Ago ? close[barsT14] : na
+float entryT30 = signalT30Ago ? close[barsT30] : na
+float entry6M = signal6MAgo ? close[bars6M] : na
+float entry1Y = signal1YAgo ? close[bars1Y] : na
+
+// Calculate returns (current price vs entry price from N bars ago)
+float returnT2 = signalT2Ago ? (close - entryT2) / entryT2 * 100 : na
+float returnT7 = signalT7Ago ? (close - entryT7) / entryT7 * 100 : na
+float returnT14 = signalT14Ago ? (close - entryT14) / entryT14 * 100 : na
+float returnT30 = signalT30Ago ? (close - entryT30) / entryT30 * 100 : na
+float return6M = signal6MAgo ? (close - entry6M) / entry6M * 100 : na
+float return1Y = signal1YAgo ? (close - entry1Y) / entry1Y * 100 : na
+
+// Signal type from N bars ago (any ATL type = ATL for counting, including ATL-RE)
+atlSignalAtOffset(int n) =>
+    atlBuySignal[n] or atlPullbackSignal[n] or atlLowCheatSignal[n] or atlReentrySignal[n]
+// Pre-compute function calls on every bar (Pine requires consistent execution)
+bool _atlT2 = atlSignalAtOffset(barsT2)
+bool _atlT30 = atlSignalAtOffset(barsT30)
+bool _atl6M = atlSignalAtOffset(bars6M)
+bool _atl1Y = atlSignalAtOffset(bars1Y)
+
+bool atlT2Ago = bar_index >= barsT2 ? _atlT2 : false
+bool atlT30Ago = bar_index >= barsT30 ? _atlT30 : false
+bool atl6MAgo = bar_index >= bars6M ? _atl6M : false
+bool atl1YAgo = bar_index >= bars1Y ? _atl1Y : false
+
+// Track statistics using arrays
+var float[] arrReturnT2 = array.new_float()
+var float[] arrReturnT7 = array.new_float()
+var float[] arrReturnT14 = array.new_float()
+var float[] arrReturnT30 = array.new_float()
+var float[] arrReturn6M = array.new_float()
+var float[] arrReturn1Y = array.new_float()
+
+var int totalSignals = 0
+var int atlSignals = 0
+var int etlSignals = 0
+var int btlSignals = 0
+
+// Count signals ONLY within lookback period
+if anyBuySignal and isWithinLookback
+    totalSignals := totalSignals + 1
+    if atlBuySignal or atlPullbackSignal or atlLowCheatSignal or atlReentrySignal
+        atlSignals := atlSignals + 1
+    else if etlBuySignal or etlPullbackSignal or etlReentrySignal
+        etlSignals := etlSignals + 1
+    else
+        btlSignals := btlSignals + 1
+
+// Check if signal N bars ago was within lookback period
+bool signalT2InRange = signalT2Ago and (bar_index - barsT2) >= (last_bar_index - lookbackBars)
+bool signalT7InRange = signalT7Ago and (bar_index - barsT7) >= (last_bar_index - lookbackBars)
+bool signalT14InRange = signalT14Ago and (bar_index - barsT14) >= (last_bar_index - lookbackBars)
+bool signalT30InRange = signalT30Ago and (bar_index - barsT30) >= (last_bar_index - lookbackBars)
+bool signal6MInRange = signal6MAgo and (bar_index - bars6M) >= (last_bar_index - lookbackBars)
+bool signal1YInRange = signal1YAgo and (bar_index - bars1Y) >= (last_bar_index - lookbackBars)
+
+// Collect returns when we have enough future data (N bars after signal) AND within lookback
+if signalT2InRange
+    array.push(arrReturnT2, returnT2)
+if signalT7InRange
+    array.push(arrReturnT7, returnT7)
+if signalT14InRange
+    array.push(arrReturnT14, returnT14)
+if signalT30InRange
+    array.push(arrReturnT30, returnT30)
+if signal6MInRange
+    array.push(arrReturn6M, return6M)
+if signal1YInRange
+    array.push(arrReturn1Y, return1Y)
+
+// ══════════════════════════════════════════════════════════════════
+// TRADE HISTORY ARRAYS (Store last N trades for detail panel)
+// ══════════════════════════════════════════════════════════════════
+var string[] arrTradeType = array.new_string()   // "ATL" or "BTL"
+var int[] arrBuyTime = array.new_int()           // timestamp of buy (store as int)
+var float[] arrBuyO = array.new_float()          // Buy OHLC
+var float[] arrBuyH = array.new_float()
+var float[] arrBuyL = array.new_float()
+var float[] arrBuyC = array.new_float()
+var int[] arrExitTime = array.new_int()          // timestamp of exit
+var float[] arrExitO = array.new_float()         // Exit OHLC
+var float[] arrExitH = array.new_float()
+var float[] arrExitL = array.new_float()
+var float[] arrExitC = array.new_float()
+var float[] arrPnL = array.new_float()           // P&L in price
+var float[] arrPnLPct = array.new_float()        // P&L in %
+
+// Determine exit bars based on selected timeframe
+int historyExitBars = tradeHistoryExit == "T+2" ? barsT2 : tradeHistoryExit == "T+7" ? barsT7 : tradeHistoryExit == "T+14" ? barsT14 : tradeHistoryExit == "T+30" ? barsT30 : tradeHistoryExit == "6M" ? bars6M : bars1Y
+
+// Check for completed trade (signal N bars ago with exit data now) — ALL 10 signal types
+bool _anyHistory = anySignalAtOffset(historyExitBars)
+bool historySignalAgo = bar_index >= historyExitBars ? _anyHistory : false
+bool historyInRange = historySignalAgo and (bar_index - historyExitBars) >= (last_bar_index - lookbackBars)
+
+// Store completed trade details
+if historyInRange
+    string tradeType = atlBuySignal[historyExitBars] ? "ATL" : atlPullbackSignal[historyExitBars] ? "ATL-PB" : atlLowCheatSignal[historyExitBars] ? "ATL-LC" : atlReentrySignal[historyExitBars] ? "ATL-RE" : etlBuySignal[historyExitBars] ? "ETL" : etlPullbackSignal[historyExitBars] ? "ETL-PB" : etlReentrySignal[historyExitBars] ? "ETL-RE" : btlBuySignal[historyExitBars] ? "BTL" : btlPullbackSignal[historyExitBars] ? "BTL-PB" : btlReentrySignal[historyExitBars] ? "BTL-RE" : "UNK"
+    int buyTimestamp = int(time[historyExitBars])  // Store timestamp directly
+    float buyO = open[historyExitBars]
+    float buyH = high[historyExitBars]
+    float buyL = low[historyExitBars]
+    float buyC = close[historyExitBars]
+    int exitTimestamp = int(time)
+    float exitO = open
+    float exitH = high
+    float exitL = low
+    float exitC = close
+    float pnl = exitC - buyC
+    float pnlPct = (exitC - buyC) / buyC * 100
+    
+    array.push(arrTradeType, tradeType)
+    array.push(arrBuyTime, buyTimestamp)
+    array.push(arrBuyO, buyO)
+    array.push(arrBuyH, buyH)
+    array.push(arrBuyL, buyL)
+    array.push(arrBuyC, buyC)
+    array.push(arrExitTime, exitTimestamp)
+    array.push(arrExitO, exitO)
+    array.push(arrExitH, exitH)
+    array.push(arrExitL, exitL)
+    array.push(arrExitC, exitC)
+    array.push(arrPnL, pnl)
+    array.push(arrPnLPct, pnlPct)
+
+// ══════════════════════════════════════════════════════════════════
+// STATISTICS CALCULATION FUNCTIONS
+// ══════════════════════════════════════════════════════════════════
+
+// Count valid (non-na) entries
+countValid(arr) =>
+    int count = 0
+    int sz = array.size(arr)
+    if sz > 0
+        for i = 0 to sz - 1
+            if not na(array.get(arr, i))
+                count := count + 1
+    count
+
+// Count wins (return > 0)
+countWins(arr) =>
+    int wins = 0
+    int sz = array.size(arr)
+    if sz > 0
+        for i = 0 to sz - 1
+            val = array.get(arr, i)
+            if not na(val) and val > 0
+                wins := wins + 1
+    wins
+
+// Sum of valid values
+sumValid(arr) =>
+    float total = 0.0
+    int sz = array.size(arr)
+    if sz > 0
+        for i = 0 to sz - 1
+            val = array.get(arr, i)
+            if not na(val)
+                total := total + val
+    total
+
+// Max of valid values
+maxValid(arr) =>
+    float maxVal = na
+    int sz = array.size(arr)
+    if sz > 0
+        for i = 0 to sz - 1
+            val = array.get(arr, i)
+            if not na(val)
+                if na(maxVal) or val > maxVal
+                    maxVal := val
+    maxVal
+
+// Min of valid values
+minValid(arr) =>
+    float minVal = na
+    int sz = array.size(arr)
+    if sz > 0
+        for i = 0 to sz - 1
+            val = array.get(arr, i)
+            if not na(val)
+                if na(minVal) or val < minVal
+                    minVal := val
+    minVal
+
+// ══════════════════════════════════════════════════════════════════
+// CALCULATE FINAL STATISTICS (on last bar)
+// ══════════════════════════════════════════════════════════════════
+
+// T+2 Stats
+int validT2 = countValid(arrReturnT2)
+int winsT2 = countWins(arrReturnT2)
+float winRateT2 = validT2 > 0 ? winsT2 / validT2 * 100 : na
+float avgT2 = validT2 > 0 ? sumValid(arrReturnT2) / validT2 : na
+float maxT2 = maxValid(arrReturnT2)
+float minT2 = minValid(arrReturnT2)
+
+// T+7 Stats
+int validT7 = countValid(arrReturnT7)
+int winsT7 = countWins(arrReturnT7)
+float winRateT7 = validT7 > 0 ? winsT7 / validT7 * 100 : na
+float avgT7 = validT7 > 0 ? sumValid(arrReturnT7) / validT7 : na
+float maxT7 = maxValid(arrReturnT7)
+float minT7 = minValid(arrReturnT7)
+
+// T+14 Stats
+int validT14 = countValid(arrReturnT14)
+int winsT14 = countWins(arrReturnT14)
+float winRateT14 = validT14 > 0 ? winsT14 / validT14 * 100 : na
+float avgT14 = validT14 > 0 ? sumValid(arrReturnT14) / validT14 : na
+float maxT14 = maxValid(arrReturnT14)
+float minT14 = minValid(arrReturnT14)
+
+// T+30 Stats
+int validT30 = countValid(arrReturnT30)
+int winsT30 = countWins(arrReturnT30)
+float winRateT30 = validT30 > 0 ? winsT30 / validT30 * 100 : na
+float avgT30 = validT30 > 0 ? sumValid(arrReturnT30) / validT30 : na
+float maxT30 = maxValid(arrReturnT30)
+float minT30 = minValid(arrReturnT30)
+
+// 6M Stats
+int valid6M = countValid(arrReturn6M)
+int wins6M = countWins(arrReturn6M)
+float winRate6M = valid6M > 0 ? wins6M / valid6M * 100 : na
+float avg6M = valid6M > 0 ? sumValid(arrReturn6M) / valid6M : na
+float max6M = maxValid(arrReturn6M)
+float min6M = minValid(arrReturn6M)
+
+// 1Y Stats
+int valid1Y = countValid(arrReturn1Y)
+int wins1Y = countWins(arrReturn1Y)
+float winRate1Y = valid1Y > 0 ? wins1Y / valid1Y * 100 : na
+float avg1Y = valid1Y > 0 ? sumValid(arrReturn1Y) / valid1Y : na
+float max1Y = maxValid(arrReturn1Y)
+float min1Y = minValid(arrReturn1Y)
+
+// ══════════════════════════════════════════════════════════════════
+// 1-SHARE BASIS CALCULATION
+// Buy 1 share at signal, sell at T+2/T+7/T+14/T+30/6M/1Y
+// P&L = exit_price - buy_price (per share)
+// Avg% = average return % across all trades
+// ══════════════════════════════════════════════════════════════════
+
+// Sum of P&L in price terms (requires storing actual prices - use returns for now)
+// Total P&L% = sum of all return percentages
+calcTotalPnLPct(arr) =>
+    float total = 0.0
+    int sz = array.size(arr)
+    if sz > 0
+        for i = 0 to sz - 1
+            val = array.get(arr, i)
+            if not na(val)
+                total := total + val
+    total
+
+// Total P&L% for each timeframe
+float totalPnLT2 = calcTotalPnLPct(arrReturnT2)
+float totalPnLT7 = calcTotalPnLPct(arrReturnT7)
+float totalPnLT14 = calcTotalPnLPct(arrReturnT14)
+float totalPnLT30 = calcTotalPnLPct(arrReturnT30)
+float totalPnL6M = calcTotalPnLPct(arrReturn6M)
+float totalPnL1Y = calcTotalPnLPct(arrReturn1Y)
+
+// ══════════════════════════════════════════════════════════════════
+// DISPLAY TABLE
+// ══════════════════════════════════════════════════════════════════
+
+// Position: top_right for stats panel
+var table statsTable = table.new(position.top_right, 8, 10, bgcolor=color.new(color.black, 80), border_width=1)
+
+// Helper function to format value or show "oor"
+formatOrOor(val, fmt) =>
+    na(val) ? "oor" : str.tostring(val, fmt)
+
+if barstate.islast and showStatsPanel
+    // Header row - 1-share basis: Exit, Total, Valid, Win, Win%, Avg%, Max%, Min%
+    table.cell(statsTable, 0, 0, "Exit", bgcolor=color.new(color.blue, 70), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 1, 0, "Total", bgcolor=color.new(color.blue, 70), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 2, 0, "Valid", bgcolor=color.new(color.blue, 70), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 3, 0, "Win", bgcolor=color.new(color.blue, 70), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 4, 0, "Win%", bgcolor=color.new(color.blue, 70), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 5, 0, "Avg%", bgcolor=color.new(color.green, 70), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 6, 0, "Max%", bgcolor=color.new(color.blue, 70), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 7, 0, "Min%", bgcolor=color.new(color.blue, 70), text_color=color.white, text_size=size.small)
+    
+    // T+2 Row
+    table.cell(statsTable, 0, 1, "T+2", bgcolor=color.new(color.gray, 80), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 1, 1, str.tostring(totalSignals), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 2, 1, str.tostring(validT2), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 3, 1, str.tostring(winsT2), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 4, 1, formatOrOor(winRateT2, "#.#"), text_color=winRateT2 >= 60 ? color.lime : winRateT2 >= 50 ? color.yellow : color.red, text_size=size.small)
+    table.cell(statsTable, 5, 1, formatOrOor(avgT2, "#.#"), bgcolor=color.new(color.green, 85), text_color=avgT2 >= 0 ? color.lime : color.red, text_size=size.small)
+    table.cell(statsTable, 6, 1, formatOrOor(maxT2, "#.#"), text_color=color.lime, text_size=size.small)
+    table.cell(statsTable, 7, 1, formatOrOor(minT2, "#.#"), text_color=color.red, text_size=size.small)
+    
+    // T+7 Row
+    table.cell(statsTable, 0, 2, "T+7", bgcolor=color.new(color.gray, 80), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 1, 2, str.tostring(totalSignals), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 2, 2, str.tostring(validT7), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 3, 2, str.tostring(winsT7), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 4, 2, formatOrOor(winRateT7, "#.#"), text_color=winRateT7 >= 60 ? color.lime : winRateT7 >= 50 ? color.yellow : color.red, text_size=size.small)
+    table.cell(statsTable, 5, 2, formatOrOor(avgT7, "#.#"), bgcolor=color.new(color.green, 85), text_color=avgT7 >= 0 ? color.lime : color.red, text_size=size.small)
+    table.cell(statsTable, 6, 2, formatOrOor(maxT7, "#.#"), text_color=color.lime, text_size=size.small)
+    table.cell(statsTable, 7, 2, formatOrOor(minT7, "#.#"), text_color=color.red, text_size=size.small)
+    
+    // T+14 Row
+    table.cell(statsTable, 0, 3, "T+14", bgcolor=color.new(color.gray, 80), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 1, 3, str.tostring(totalSignals), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 2, 3, str.tostring(validT14), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 3, 3, str.tostring(winsT14), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 4, 3, formatOrOor(winRateT14, "#.#"), text_color=winRateT14 >= 60 ? color.lime : winRateT14 >= 50 ? color.yellow : color.red, text_size=size.small)
+    table.cell(statsTable, 5, 3, formatOrOor(avgT14, "#.#"), bgcolor=color.new(color.green, 85), text_color=avgT14 >= 0 ? color.lime : color.red, text_size=size.small)
+    table.cell(statsTable, 6, 3, formatOrOor(maxT14, "#.#"), text_color=color.lime, text_size=size.small)
+    table.cell(statsTable, 7, 3, formatOrOor(minT14, "#.#"), text_color=color.red, text_size=size.small)
+    
+    // T+30 Row
+    table.cell(statsTable, 0, 4, "T+30", bgcolor=color.new(color.gray, 80), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 1, 4, str.tostring(totalSignals), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 2, 4, str.tostring(validT30), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 3, 4, str.tostring(winsT30), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 4, 4, formatOrOor(winRateT30, "#.#"), text_color=winRateT30 >= 60 ? color.lime : winRateT30 >= 50 ? color.yellow : color.red, text_size=size.small)
+    table.cell(statsTable, 5, 4, formatOrOor(avgT30, "#.#"), bgcolor=color.new(color.green, 85), text_color=avgT30 >= 0 ? color.lime : color.red, text_size=size.small)
+    table.cell(statsTable, 6, 4, formatOrOor(maxT30, "#.#"), text_color=color.lime, text_size=size.small)
+    table.cell(statsTable, 7, 4, formatOrOor(minT30, "#.#"), text_color=color.red, text_size=size.small)
+    
+    // 6M Row
+    table.cell(statsTable, 0, 5, "6M", bgcolor=color.new(color.gray, 80), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 1, 5, str.tostring(totalSignals), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 2, 5, str.tostring(valid6M), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 3, 5, str.tostring(wins6M), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 4, 5, formatOrOor(winRate6M, "#.#"), text_color=winRate6M >= 60 ? color.lime : winRate6M >= 50 ? color.yellow : color.red, text_size=size.small)
+    table.cell(statsTable, 5, 5, formatOrOor(avg6M, "#.#"), bgcolor=color.new(color.green, 85), text_color=avg6M >= 0 ? color.lime : color.red, text_size=size.small)
+    table.cell(statsTable, 6, 5, formatOrOor(max6M, "#.#"), text_color=color.lime, text_size=size.small)
+    table.cell(statsTable, 7, 5, formatOrOor(min6M, "#.#"), text_color=color.red, text_size=size.small)
+    
+    // 1Y Row
+    table.cell(statsTable, 0, 6, "1Y", bgcolor=color.new(color.gray, 80), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 1, 6, str.tostring(totalSignals), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 2, 6, str.tostring(valid1Y), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 3, 6, str.tostring(wins1Y), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 4, 6, formatOrOor(winRate1Y, "#.#"), text_color=winRate1Y >= 60 ? color.lime : winRate1Y >= 50 ? color.yellow : color.red, text_size=size.small)
+    table.cell(statsTable, 5, 6, formatOrOor(avg1Y, "#.#"), bgcolor=color.new(color.green, 85), text_color=avg1Y >= 0 ? color.lime : color.red, text_size=size.small)
+    table.cell(statsTable, 6, 6, formatOrOor(max1Y, "#.#"), text_color=color.lime, text_size=size.small)
+    table.cell(statsTable, 7, 6, formatOrOor(min1Y, "#.#"), text_color=color.red, text_size=size.small)
+    
+    // Summary row
+    table.cell(statsTable, 0, 7, "SUMMARY", bgcolor=color.new(color.purple, 70), text_color=color.white, text_size=size.small)
+    table.cell(statsTable, 1, 7, "ATL:" + str.tostring(atlSignals), bgcolor=color.new(color.purple, 70), text_color=color.lime, text_size=size.small)
+    table.cell(statsTable, 2, 7, "ETL:" + str.tostring(etlSignals), bgcolor=color.new(color.purple, 70), text_color=color.orange, text_size=size.small)
+    table.cell(statsTable, 3, 7, "BTL:" + str.tostring(btlSignals), bgcolor=color.new(color.purple, 70), text_color=color.aqua, text_size=size.small)
+    table.merge_cells(statsTable, 4, 7, 5, 7)
+    table.cell(statsTable, 4, 7, syminfo.ticker, bgcolor=color.new(color.purple, 70), text_color=color.yellow, text_size=size.small)
+    table.merge_cells(statsTable, 6, 7, 7, 7)
+    table.cell(statsTable, 6, 7, str.tostring(lookbackYears) + "Y", bgcolor=color.new(color.purple, 70), text_color=color.gray, text_size=size.small)
+    
+    // Note row
+    table.merge_cells(statsTable, 0, 8, 7, 8)
+    table.cell(statsTable, 0, 8, "ATL/ETL/BTL | PB=Pullback|LC=LowCheat|RE=ReEntry|oor=chưa đủ data", bgcolor=color.new(color.gray, 90), text_color=color.gray, text_size=size.tiny)
+
+// ══════════════════════════════════════════════════════════════════
+// TRADE HISTORY TABLE (Shows individual trade details)
+// ══════════════════════════════════════════════════════════════════
+// Position: bottom_right for trade history panel
+var table historyTable = table.new(position.bottom_right, 8, 22, bgcolor=color.new(color.black, 80), border_width=1)
+
+if barstate.islast and showTradeHistory
+    int numTrades = array.size(arrTradeType)
+    int maxRows = 20  // Show last 20 trades
+    int startIdx = numTrades > maxRows ? numTrades - maxRows : 0
+    
+    // Header row
+    table.cell(historyTable, 0, 0, tradeHistoryExit, bgcolor=color.new(color.blue, 60), text_color=color.white, text_size=size.tiny)
+    table.cell(historyTable, 1, 0, "Buy", bgcolor=color.new(color.blue, 60), text_color=color.white, text_size=size.tiny)
+    table.cell(historyTable, 2, 0, "B.OHLC", bgcolor=color.new(color.blue, 60), text_color=color.white, text_size=size.tiny)
+    table.cell(historyTable, 3, 0, "Exit", bgcolor=color.new(color.blue, 60), text_color=color.white, text_size=size.tiny)
+    table.cell(historyTable, 4, 0, "E.OHLC", bgcolor=color.new(color.blue, 60), text_color=color.white, text_size=size.tiny)
+    table.cell(historyTable, 5, 0, "P&L", bgcolor=color.new(color.green, 60), text_color=color.white, text_size=size.tiny)
+    table.cell(historyTable, 6, 0, "%", bgcolor=color.new(color.green, 60), text_color=color.white, text_size=size.tiny)
+    table.cell(historyTable, 7, 0, "Type", bgcolor=color.new(color.gray, 60), text_color=color.white, text_size=size.tiny)
+    
+    // Trade rows (most recent at top)
+    int rowNum = 1
+    if numTrades > 0
+        for i = numTrades - 1 to startIdx
+            if rowNum <= maxRows
+                string tType = array.get(arrTradeType, i)
+                int buyTs = array.get(arrBuyTime, i)
+                int exitTs = array.get(arrExitTime, i)
+                float bO = array.get(arrBuyO, i)
+                float bH = array.get(arrBuyH, i)
+                float bL = array.get(arrBuyL, i)
+                float bC = array.get(arrBuyC, i)
+                float eO = array.get(arrExitO, i)
+                float eH = array.get(arrExitH, i)
+                float eL = array.get(arrExitL, i)
+                float eC = array.get(arrExitC, i)
+                float pnl = array.get(arrPnL, i)
+                float pnlPct = array.get(arrPnLPct, i)
+                
+                // Format OHLC compact: O/H/L/C
+                string buyOHLC = str.tostring(bO, "#.#") + "/" + str.tostring(bH, "#.#") + "/" + str.tostring(bL, "#.#") + "/" + str.tostring(bC, "#.#")
+                string exitOHLC = str.tostring(eO, "#.#") + "/" + str.tostring(eH, "#.#") + "/" + str.tostring(eL, "#.#") + "/" + str.tostring(eC, "#.#")
+                
+                // Format date from stored timestamp
+                string buyDate = str.tostring(year(buyTs)) + "/" + str.tostring(month(buyTs), "00") + "/" + str.tostring(dayofmonth(buyTs), "00")
+                string exitDate = str.tostring(year(exitTs)) + "/" + str.tostring(month(exitTs), "00") + "/" + str.tostring(dayofmonth(exitTs), "00")
+                
+                color rowBg = rowNum % 2 == 0 ? color.new(color.gray, 90) : color.new(color.black, 85)
+                color pnlColor = pnl >= 0 ? color.lime : color.red
+                color typeColor = tType == "ATL" ? color.lime : tType == "ATL-PB" ? color.teal : tType == "ATL-LC" ? color.blue : tType == "ATL-RE" ? color.olive : tType == "ETL" ? color.orange : tType == "ETL-PB" ? color.orange : tType == "ETL-RE" ? color.orange : tType == "BTL-PB" ? color.aqua : tType == "BTL-RE" ? color.aqua : color.aqua
+                
+                table.cell(historyTable, 0, rowNum, str.tostring(rowNum), bgcolor=rowBg, text_color=color.gray, text_size=size.tiny)
+                table.cell(historyTable, 1, rowNum, buyDate, bgcolor=rowBg, text_color=color.white, text_size=size.tiny)
+                table.cell(historyTable, 2, rowNum, buyOHLC, bgcolor=rowBg, text_color=color.white, text_size=size.tiny)
+                table.cell(historyTable, 3, rowNum, exitDate, bgcolor=rowBg, text_color=color.white, text_size=size.tiny)
+                table.cell(historyTable, 4, rowNum, exitOHLC, bgcolor=rowBg, text_color=color.white, text_size=size.tiny)
+                table.cell(historyTable, 5, rowNum, (pnl >= 0 ? "+" : "") + str.tostring(pnl, "#.##"), bgcolor=rowBg, text_color=pnlColor, text_size=size.tiny)
+                table.cell(historyTable, 6, rowNum, (pnlPct >= 0 ? "+" : "") + str.tostring(pnlPct, "#.#") + "%", bgcolor=rowBg, text_color=pnlColor, text_size=size.tiny)
+                table.cell(historyTable, 7, rowNum, tType, bgcolor=rowBg, text_color=typeColor, text_size=size.tiny)
+                
+                rowNum := rowNum + 1
+    
+    // Summary row at bottom
+    if numTrades > 0
+        int summaryRow = math.min(numTrades, maxRows) + 1
+        table.merge_cells(historyTable, 0, summaryRow, 4, summaryRow)
+        table.cell(historyTable, 0, summaryRow, "Total: " + str.tostring(numTrades) + " trades | Showing last " + str.tostring(math.min(numTrades, maxRows)), bgcolor=color.new(color.purple, 70), text_color=color.gray, text_size=size.tiny)
+        table.merge_cells(historyTable, 5, summaryRow, 7, summaryRow)
+        table.cell(historyTable, 5, summaryRow, "1 share basis", bgcolor=color.new(color.purple, 70), text_color=color.gray, text_size=size.tiny)
+
+// ══════════════════════════════════════════════════════════════════
+// ZONE TRANSITION MARKERS + SIGNAL MARKERS (Optional)
+// ══════════════════════════════════════════════════════════════════
+// Zone transitions (mutually exclusive via zoneMode)
+plotshape(zoneToATL, "↑ Switch to ATL", style=shape.triangleup,   location=location.belowbar, color=color.lime,   size=size.small, text="ATL")
+plotshape(zoneToETL, "◆ Enter ETL",     style=shape.diamond,      location=location.belowbar, color=color.orange, size=size.small, text="ETL")
+plotshape(zoneToBTL, "↓ Switch to BTL", style=shape.triangledown, location=location.abovebar, color=color.red,    size=size.small, text="BTL")
+
+// Buy signal markers (optional, all lime green - details in trade history table)
+bool anySignal = atlBuySignal or atlPullbackSignal or atlLowCheatSignal or atlReentrySignal or etlBuySignal or etlPullbackSignal or etlReentrySignal or btlBuySignal or btlPullbackSignal or btlReentrySignal
+plotshape(showSignalMarkers and anySignal, "BUY Signal", style=shape.circle, location=location.belowbar, color=color.lime, size=size.tiny)
+
+// Note: Removed plot(returnT2) as it creates separate pane even with overlay=true
