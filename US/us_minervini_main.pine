@@ -1,5 +1,5 @@
 //@version=5
-indicator("Minervini Complete System", shorttitle="MM_Complete", overlay=true, max_labels_count=50)
+indicator("Minervini Complete System - US", shorttitle="MM_US", overlay=true, max_labels_count=50)
 
 // ══════════════════════════════════════════════════════════════════
 // MINERVINI COMPLETE: Dual Mode System
@@ -12,7 +12,7 @@ indicator("Minervini Complete System", shorttitle="MM_Complete", overlay=true, m
 // INPUTS
 // ==========================
 // Trend inputs
-benchmarkSymbol = input.symbol("HOSE:VNINDEX", "Benchmark (RS)")
+benchmarkSymbol = input.symbol("SP:SPX", "Benchmark (S&P 500)")
 nearHighPct     = input.float(25.0, "Near 52W High Threshold %", minval=1, maxval=50)
 bars52          = input.int(252, "Bars for 52 weeks", minval=50, maxval=400)
 
@@ -21,7 +21,7 @@ baseLen       = input.int(30, "Base Length (bars)", minval=15, maxval=100)
 atrLen        = input.int(14, "ATR Length")
 vcpSegLen     = input.int(7,  "T-Segment Length")
 pivotLook     = input.int(5,  "Pivot Lookback")
-htfMinGain    = input.float(40.0, "HTF Min Prior Gain %", tooltip="v3: VN calibrated from 80%")
+htfMinGain    = input.float(80.0, "HTF Min Prior Gain %", tooltip="Minervini original: 80%")
 vcpBaseLen    = input.int(60, "VCP Base Length (bars)", minval=30, maxval=120, tooltip="v3: Longer lookback for VCP contraction detection")
 
 // Weinstein-Darvas inputs (Below The Line mode)
@@ -39,7 +39,7 @@ showPivot     = input.bool(true, "Show Entry/Pivot")
 showStopTP    = input.bool(false, "Show Stop/TP levels (may compress chart)")
 
 // Fundamental data toggle - DISABLE for indices/forex/crypto to avoid errors
-enableFundamentals = input.bool(false, "Enable Fundamentals (stocks only)", group="Data Settings")
+enableFundamentals = input.bool(true, "Enable Fundamentals (stocks only)", group="Data Settings")
 
 // Panel Export - Alert with full panel content for copying
 enablePanelExport = input.bool(false, "Enable Panel Export Alert", group="Data Settings", tooltip="Khi bật, mỗi khi có tín hiệu BUY sẽ tạo alert chứa toàn bộ nội dung panel. Bạn có thể copy từ Alert Log.")
@@ -379,7 +379,7 @@ upVolMA   = ta.sma(upVol, 10)
 downVolMA = ta.sma(downVol, 10)
 volMA20 = ta.sma(volume, 20)
 volMA50 = ta.sma(volume, 50)
-volDryUp = volMA20 < volMA50 * 1.0    // v3: VN calibrated from 0.8
+volDryUp = volMA20 < volMA50 * 0.8    // US: Minervini original
 volSuperDry = volMA20 < volMA50 * 0.7  // v3: bonus for true supply exhaustion
 accumRatio = upVolMA / math.max(downVolMA, 1)
 volHealthy = upVolMA >= downVolMA
@@ -393,22 +393,22 @@ rangeMA5 = ta.sma(rangePct, 5)
 rangeMA20 = ta.sma(rangePct, 20)
 tightnessRatio = rangeMA5 / rangeMA20
 higherLows = ta.lowest(low[1], pivotLook) >= ta.lowest(low[1], pivotLook * 2)  // ANTI-REPAINT
-isTight = tightnessRatio < 1.3 and higherLows  // v3: VN calibrated from 0.9
+isTight = tightnessRatio < 0.9 and higherLows  // US: Minervini original
 
 // Pattern detection
-isHTF = priorGain >= htfMinGain and baseDepthPct <= 25 and baseDepthPct >= 10 and tightnessRatio < 0.8 and pricePosPct >= 70  // v3: tightness 0.6→0.8
-isCup = baseDepthPct >= 15 and baseDepthPct <= 65 and pricePosPct >= 70 and tightnessRatio < 1.2 and tCount >= 1 and volDryUp  // v3: tightness 0.85→1.2
+isHTF = priorGain >= htfMinGain and baseDepthPct <= 25 and baseDepthPct >= 10 and tightnessRatio < 0.6 and pricePosPct >= 70  // US: Minervini original
+isCup = baseDepthPct >= 15 and baseDepthPct <= 65 and pricePosPct >= 70 and tightnessRatio < 0.85 and tCount >= 1 and volDryUp  // US: Minervini original
 low1 = ta.lowest(low[1], baseLen / 2)  // ANTI-REPAINT
 low2 = ta.lowest(low[baseLen/2], baseLen / 2)
 hasWShape = math.abs(low1 - low2) / low1 * 100 < 5
 isDoubleBottom = hasWShape and baseDepthPct >= 15 and baseDepthPct <= 50 and pricePosPct >= 60 and hasVCPchar
-isFlatBase = baseDepthPct <= 20 and pricePosPct >= 80 and volHealthy  // v3: depth 15→20
+isFlatBase = baseDepthPct <= 15 and pricePosPct >= 80 and volHealthy  // US: Minervini original 10-15%
 pivotLow1 = ta.lowest(low[1], pivotLook)  // ANTI-REPAINT
 pivotLow2 = ta.lowest(low[pivotLook], pivotLook)
 pivotLow3 = ta.lowest(low[pivotLook*2], pivotLook)
-isAscending = pivotLow1 > pivotLow2 and pivotLow2 > pivotLow3 and baseDepthPct <= 40 and pricePosPct >= 50  // v3: depth 35→40
-isPowerPlay = pivotDist <= 3 and tightnessRatio < 0.7 and volDryUp and hasVCPchar  // v3: tightness 0.5→0.7
-isVCP = hasVCPchar and vcpBaseDepth <= 40 and pricePosPct >= 70 and isTight and volDryUp  // v3: uses vcpBaseLen=60, depth 35→40
+isAscending = pivotLow1 > pivotLow2 and pivotLow2 > pivotLow3 and baseDepthPct <= 35 and pricePosPct >= 50  // US: Minervini original
+isPowerPlay = pivotDist <= 3 and tightnessRatio < 0.5 and volDryUp and hasVCPchar  // US: Minervini original
+isVCP = hasVCPchar and vcpBaseDepth <= 35 and pricePosPct >= 70 and isTight and volDryUp  // US: Minervini original
 
 // PARABOLIC LAUNCH Detection (v3 - VN market momentum pattern)
 // Designed for stocks like GTD/CET/TIN with explosive moves from deep bases
@@ -479,10 +479,10 @@ else if not volHealthy
     patternScore := 10
 
 // Component scores
-baseScore = baseDepthPct <= 20 ? 25 : baseDepthPct <= 30 ? 20 : baseDepthPct <= 40 ? 15 : baseDepthPct <= 50 ? 10 : 5  // v3: VN calibrated
+baseScore = baseDepthPct <= 12 ? 25 : baseDepthPct <= 20 ? 20 : baseDepthPct <= 30 ? 15 : baseDepthPct <= 40 ? 10 : 5  // US: tighter bases
 vcpScore = tCount >= 3 ? 25 : tCount >= 2 ? 20 : tCount >= 1 ? 10 : 0
 volScore = (volHealthy ? 10 : 0) + (volSuperDry ? 15 : volDryUp ? 10 : 0) + (accumRatio >= 1.5 ? 5 : 0)  // v3: volSuperDry bonus
-tightScore = (tightnessRatio < 0.7 ? 15 : tightnessRatio < 1.0 ? 12 : tightnessRatio < 1.3 ? 10 : 5) + (higherLows ? 10 : 0)  // v3: VN calibrated
+tightScore = (tightnessRatio < 0.5 ? 15 : tightnessRatio < 0.7 ? 12 : tightnessRatio < 0.9 ? 10 : 5) + (higherLows ? 10 : 0)  // US: Minervini original
 
 // RS Momentum Bonus (Minervini: RS is critical for super stocks)
 // Add bonus points when RS is very strong - this can push borderline setups over the threshold

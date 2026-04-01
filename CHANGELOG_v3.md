@@ -1,7 +1,7 @@
-# TDPS v3 — VN Market Calibration & Parabolic Launch
+# TDPS v3 — Multi-Market Calibration & Parabolic Launch
 
 ## Summary
-v3 calibrates pattern detection thresholds for the Vietnamese market based on empirical analysis of 44 stocks over 1 year (2025-03–2026-03). Adds a new **PARABOLIC LAUNCH** pattern for explosive momentum stocks.
+v3 calibrates pattern detection thresholds for 3 markets (VN, US, Crypto) based on Minervini SEPA philosophy adapted to each market's characteristics. Adds **PARABOLIC LAUNCH** pattern, ETL bar coloring fix, and dead code cleanup.
 
 ## Changes Applied
 
@@ -73,10 +73,88 @@ Designed for stocks like GTD, CET, TIN with explosive moves from deep bases.
 - `volScore`: Added `volSuperDry` bonus tier (15 pts vs 10 for regular volDryUp)
 - `tightScore`: Adjusted breakpoints (0.7/1.0/1.3) matching new thresholds
 
-### F. Files Modified
+### F. ETL Bar Coloring Fix
 
-- `minervini_complete_vnstock.pine` — Main indicator (all changes)
-- `minervini_backtest_vnstock.pine` — Backtest (synced pattern detection + thresholds)
+**Bug**: ETL BUY shows in panel but bars not colored green.
+
+**Root cause**: `etlBuySignal` (confirmed) only fires on first bar via anti-repaint guard, but `etlBuySignal_RT` (panel) fires every bar where conditions persist.
+
+**Fix**: Added `etlBuyTriggered` as aqua bar color for active ETL positions (mirrors ATL's `isAddHold`):
+- ETL breakout bar → Lime
+- ETL position active → Aqua
+- ETL base → Yellow (60% transparent)
+
+### G. Dead Code Cleanup
+
+Removed 10 unused variables (~30 lines per file):
+`sellVol`, `buyVolMA5`, `sellVolMA5`, `aboveLow30pct`, `patternColor` (12 assignments), `priceChange`, `rsChange10`, `rsAccelerating`, `regularBreakout`, `gapBreakout`
+
+### H. File Renaming Convention
+
+| Folder | Old Name | New Name |
+|---|---|---|
+| VN/ | `minervini_complete_vnstock.pine` | `vn_minervini_main.pine` |
+| VN/ | `minervini_backtest_vnstock.pine` | `vn_minervini_backtest.pine` |
+| VN/ | `rsline_vnstock.pine` | `vn_rsline.pine` |
+| US/ | `minervini_complete_vnstock.pine` | `us_minervini_main.pine` |
+| US/ | `minervini_backtest_vnstock.pine` | `us_minervini_backtest.pine` |
+| US/ | `rsline_vnstock.pine` | `us_rsline.pine` |
+| Crypto/ | `minervini_complete_vnstock copy.pine` | `crypto_minervini_main.pine` |
+| Crypto/ | `minervini_backtest_vnstock copy.pine` | `crypto_minervini_backtest.pine` |
+| Crypto/ | `rsline_vnstock copy.pine` | `crypto_rsline.pine` |
+
+### I. US Market Calibration (Minervini Original)
+
+US = Minervini's home market. Restored original thresholds from his books.
+
+| Parameter | VN | US | Rationale |
+|---|---|---|---|
+| Benchmark | `HOSE:VNINDEX` | `SP:SPX` | S&P 500 standard for RS |
+| HTF Min Gain | 40% | **80%** | Minervini original |
+| Tightness (isTight) | < 1.3 | **< 0.9** | US bases are tighter |
+| Vol Dry-up | < 1.0 | **< 0.8** | Deep US liquidity |
+| HTF tightness | < 0.8 | **< 0.6** | Original |
+| Cup tightness | < 1.2 | **< 0.85** | Original |
+| PowerPlay tightness | < 0.7 | **< 0.5** | Original |
+| Flat Base depth | ≤ 20% | **≤ 15%** | Minervini: 10-15% |
+| Ascending depth | ≤ 40% | **≤ 35%** | Original |
+| VCP depth | ≤ 40% | **≤ 35%** | Original |
+| Base scoring | 20/30/40/50 | **12/20/30/40** | Tighter US bases |
+| Tight scoring | 0.7/1.0/1.3 | **0.5/0.7/0.9** | Match original |
+| Fundamentals | OFF | **ON** | US has best EPS data |
+
+### J. Crypto Market Calibration
+
+Crypto = extreme volatility, 24/7 market, no fundamentals. Thresholds expanded.
+
+| Parameter | VN | Crypto | Rationale |
+|---|---|---|---|
+| Benchmark | `HOSE:VNINDEX` | `CRYPTOCAP:TOTAL` | Total crypto market cap |
+| 52W Bars | 252 | **365** | 24/7 trading |
+| HTF Min Gain | 40% | **100%** | Crypto super-cycles |
+| Tightness (isTight) | < 1.3 | **< 1.5** | Higher daily volatility |
+| Vol Dry-up | < 1.0 | **< 1.2** | Inconsistent volume |
+| HTF tightness | < 0.8 | **< 1.0** | Wider range |
+| Cup tightness | < 1.2 | **< 1.4** | Deeper cups normal |
+| PowerPlay tightness | < 0.7 | **< 0.8** | Relaxed |
+| Flat Base depth | ≤ 20% | **≤ 25%** | Crypto dips deeper |
+| Ascending depth | ≤ 40% | **≤ 45%** | Wider ascending |
+| VCP depth | ≤ 40% | **≤ 50%** | Wider contractions |
+| Base scoring | 20/30/40/50 | **25/40/55/70** | Deep corrections normal |
+| Tight scoring | 0.7/1.0/1.3 | **0.8/1.2/1.5** | Higher vol tolerance |
+| Climax Top vol | 400% | **600%** | Crypto spikes bigger |
+| Extended from MA20 | 7% | **12%** | Crypto trends farther |
+| Distribution Day | -0.2% | **-1.0%** | Daily vol much higher |
+| Follow-through Day | +1.25% | **+3.0%** | Needs bigger move |
+| Darvas Max Width | 15% | **25%** | Wider boxes |
+| RSI Oversold Lookback | 100 | **150** | Longer bear markets |
+| Fundamentals | OFF | OFF | No EPS for crypto |
+
+### K. Files Modified (Final)
+
+**VN/** — `vn_minervini_main.pine`, `vn_minervini_backtest.pine`, `vn_rsline.pine`
+**US/** — `us_minervini_main.pine`, `us_minervini_backtest.pine`, `us_rsline.pine`
+**Crypto/** — `crypto_minervini_main.pine`, `crypto_minervini_backtest.pine`, `crypto_rsline.pine`
 
 ## Data Source
 

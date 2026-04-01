@@ -1,11 +1,11 @@
 //@version=5
-indicator("Minervini RS VNStock", shorttitle="RS_VN", overlay=false)
+indicator("Minervini RS - US", shorttitle="RS_US", overlay=false)
 
 //----------------------------
-// Inputs - VIETNAM STOCK VERSION
-// Benchmark: VNINDEX for Vietnam market
+// Inputs - US STOCK VERSION
+// Benchmark: S&P 500 for US market
 //----------------------------
-benchmarkSymbol = input.symbol("HOSE:VNINDEX", "Benchmark (VNINDEX)")
+benchmarkSymbol = input.symbol("SP:SPX", "Benchmark (S&P 500)")
 smoothLength    = input.int(10, "SMA của RS", minval=1, maxval=50)
 
 //----------------------------

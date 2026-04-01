@@ -1,5 +1,5 @@
 //@version=5
-indicator("Minervini Complete System", shorttitle="MM_Complete", overlay=true, max_labels_count=50)
+indicator("Minervini Complete System - Crypto", shorttitle="MM_Crypto", overlay=true, max_labels_count=50)
 
 // ══════════════════════════════════════════════════════════════════
 // MINERVINI COMPLETE: Dual Mode System
@@ -12,22 +12,22 @@ indicator("Minervini Complete System", shorttitle="MM_Complete", overlay=true, m
 // INPUTS
 // ==========================
 // Trend inputs
-benchmarkSymbol = input.symbol("HOSE:VNINDEX", "Benchmark (RS)")
+benchmarkSymbol = input.symbol("CRYPTOCAP:TOTAL", "Benchmark (Total Crypto Market Cap)")
 nearHighPct     = input.float(25.0, "Near 52W High Threshold %", minval=1, maxval=50)
-bars52          = input.int(252, "Bars for 52 weeks", minval=50, maxval=400)
+bars52          = input.int(365, "Bars for 52 weeks", minval=50, maxval=500, tooltip="Crypto: 365 days (24/7 market)")
 
 // Pattern inputs
 baseLen       = input.int(30, "Base Length (bars)", minval=15, maxval=100)
 atrLen        = input.int(14, "ATR Length")
 vcpSegLen     = input.int(7,  "T-Segment Length")
 pivotLook     = input.int(5,  "Pivot Lookback")
-htfMinGain    = input.float(40.0, "HTF Min Prior Gain %", tooltip="v3: VN calibrated from 80%")
+htfMinGain    = input.float(100.0, "HTF Min Prior Gain %", tooltip="Crypto: 100%+ for super-cycle moves")
 vcpBaseLen    = input.int(60, "VCP Base Length (bars)", minval=30, maxval=120, tooltip="v3: Longer lookback for VCP contraction detection")
 
 // Weinstein-Darvas inputs (Below The Line mode)
 darvasBoxLen  = input.int(20, "Darvas Box Length (bars)", minval=10, maxval=50)
-darvasMaxWidth = input.float(15.0, "Darvas Max Box Width %", minval=5, maxval=30)
-rsiOversoldLookback = input.int(100, "RSI Oversold Lookback (bars)", minval=20, maxval=200)
+darvasMaxWidth = input.float(25.0, "Darvas Max Box Width %", minval=5, maxval=50, tooltip="Crypto: wider boxes due to higher volatility")
+rsiOversoldLookback = input.int(150, "RSI Oversold Lookback (bars)", minval=20, maxval=300, tooltip="Crypto: longer bear markets")
 
 // Display inputs - toggle plots that may affect Y-axis scale
 showInfoPanel = input.bool(true, "Show Info Panel (tắt để xem Backtest panels)")
@@ -379,7 +379,7 @@ upVolMA   = ta.sma(upVol, 10)
 downVolMA = ta.sma(downVol, 10)
 volMA20 = ta.sma(volume, 20)
 volMA50 = ta.sma(volume, 50)
-volDryUp = volMA20 < volMA50 * 1.0    // v3: VN calibrated from 0.8
+volDryUp = volMA20 < volMA50 * 1.2    // Crypto: relaxed for inconsistent volume
 volSuperDry = volMA20 < volMA50 * 0.7  // v3: bonus for true supply exhaustion
 accumRatio = upVolMA / math.max(downVolMA, 1)
 volHealthy = upVolMA >= downVolMA
@@ -393,22 +393,22 @@ rangeMA5 = ta.sma(rangePct, 5)
 rangeMA20 = ta.sma(rangePct, 20)
 tightnessRatio = rangeMA5 / rangeMA20
 higherLows = ta.lowest(low[1], pivotLook) >= ta.lowest(low[1], pivotLook * 2)  // ANTI-REPAINT
-isTight = tightnessRatio < 1.3 and higherLows  // v3: VN calibrated from 0.9
+isTight = tightnessRatio < 1.5 and higherLows  // Crypto: accommodates higher volatility
 
 // Pattern detection
-isHTF = priorGain >= htfMinGain and baseDepthPct <= 25 and baseDepthPct >= 10 and tightnessRatio < 0.8 and pricePosPct >= 70  // v3: tightness 0.6→0.8
-isCup = baseDepthPct >= 15 and baseDepthPct <= 65 and pricePosPct >= 70 and tightnessRatio < 1.2 and tCount >= 1 and volDryUp  // v3: tightness 0.85→1.2
+isHTF = priorGain >= htfMinGain and baseDepthPct <= 30 and baseDepthPct >= 10 and tightnessRatio < 1.0 and pricePosPct >= 70  // Crypto: wider range
+isCup = baseDepthPct >= 15 and baseDepthPct <= 75 and pricePosPct >= 70 and tightnessRatio < 1.4 and tCount >= 1 and volDryUp  // Crypto: deeper cups normal
 low1 = ta.lowest(low[1], baseLen / 2)  // ANTI-REPAINT
 low2 = ta.lowest(low[baseLen/2], baseLen / 2)
 hasWShape = math.abs(low1 - low2) / low1 * 100 < 5
 isDoubleBottom = hasWShape and baseDepthPct >= 15 and baseDepthPct <= 50 and pricePosPct >= 60 and hasVCPchar
-isFlatBase = baseDepthPct <= 20 and pricePosPct >= 80 and volHealthy  // v3: depth 15→20
+isFlatBase = baseDepthPct <= 25 and pricePosPct >= 80 and volHealthy  // Crypto: dips deeper
 pivotLow1 = ta.lowest(low[1], pivotLook)  // ANTI-REPAINT
 pivotLow2 = ta.lowest(low[pivotLook], pivotLook)
 pivotLow3 = ta.lowest(low[pivotLook*2], pivotLook)
-isAscending = pivotLow1 > pivotLow2 and pivotLow2 > pivotLow3 and baseDepthPct <= 40 and pricePosPct >= 50  // v3: depth 35→40
-isPowerPlay = pivotDist <= 3 and tightnessRatio < 0.7 and volDryUp and hasVCPchar  // v3: tightness 0.5→0.7
-isVCP = hasVCPchar and vcpBaseDepth <= 40 and pricePosPct >= 70 and isTight and volDryUp  // v3: uses vcpBaseLen=60, depth 35→40
+isAscending = pivotLow1 > pivotLow2 and pivotLow2 > pivotLow3 and baseDepthPct <= 45 and pricePosPct >= 50  // Crypto: wider ascending
+isPowerPlay = pivotDist <= 3 and tightnessRatio < 0.8 and volDryUp and hasVCPchar  // Crypto: relaxed tightness
+isVCP = hasVCPchar and vcpBaseDepth <= 50 and pricePosPct >= 70 and isTight and volDryUp  // Crypto: wider VCP contractions
 
 // PARABOLIC LAUNCH Detection (v3 - VN market momentum pattern)
 // Designed for stocks like GTD/CET/TIN with explosive moves from deep bases
@@ -479,10 +479,10 @@ else if not volHealthy
     patternScore := 10
 
 // Component scores
-baseScore = baseDepthPct <= 20 ? 25 : baseDepthPct <= 30 ? 20 : baseDepthPct <= 40 ? 15 : baseDepthPct <= 50 ? 10 : 5  // v3: VN calibrated
+baseScore = baseDepthPct <= 25 ? 25 : baseDepthPct <= 40 ? 20 : baseDepthPct <= 55 ? 15 : baseDepthPct <= 70 ? 10 : 5  // Crypto: deep corrections normal
 vcpScore = tCount >= 3 ? 25 : tCount >= 2 ? 20 : tCount >= 1 ? 10 : 0
 volScore = (volHealthy ? 10 : 0) + (volSuperDry ? 15 : volDryUp ? 10 : 0) + (accumRatio >= 1.5 ? 5 : 0)  // v3: volSuperDry bonus
-tightScore = (tightnessRatio < 0.7 ? 15 : tightnessRatio < 1.0 ? 12 : tightnessRatio < 1.3 ? 10 : 5) + (higherLows ? 10 : 0)  // v3: VN calibrated
+tightScore = (tightnessRatio < 0.8 ? 15 : tightnessRatio < 1.2 ? 12 : tightnessRatio < 1.5 ? 10 : 5) + (higherLows ? 10 : 0)  // Crypto: higher vol tolerance
 
 // RS Momentum Bonus (Minervini: RS is critical for super stocks)
 // Add bonus points when RS is very strong - this can push borderline setups over the threshold
@@ -865,8 +865,8 @@ bool volDryUpOnUp = close > close[1] and volume < volMA20 * 0.5  // Weak rally
 // Minervini: Climax top occurs AFTER an extended advance, not on first breakout
 // When volume is TOO high (400%+), smart money is often SELLING into strength
 float distFromMA20 = (close - ma20) / ma20 * 100  // Distance from MA20 as percentage
-bool isClimaxVolume = volSurgePct >= 400  // 4x average volume
-bool isExtended = distFromMA20 >= 7.0     // Price 7%+ above MA20 (extended advance)
+bool isClimaxVolume = volSurgePct >= 600  // Crypto: 6x average (spikes bigger)
+bool isExtended = distFromMA20 >= 12.0    // Crypto: 12%+ above MA20 (trends farther)
 float barRangePct = (high - low) / low * 100
 float atrThreshold = ta.atr(14) / close * 100 * 1.5
 bool isWideBar = barRangePct > atrThreshold  // 1.5x ATR
@@ -916,8 +916,8 @@ float benchVolume = request.security(benchmarkSymbol, timeframe.period, volume)
 float benchVolMA = request.security(benchmarkSymbol, timeframe.period, ta.sma(volume, 50))
 float benchChange = (benchClose - benchClose[1]) / benchClose[1] * 100
 
-// Distribution Day: Index drops ≥0.2% on higher volume
-bool isDistributionDay = benchChange <= -0.2 and benchVolume > benchVolume[1]
+// Distribution Day: Crypto needs bigger threshold due to daily volatility
+bool isDistributionDay = benchChange <= -1.0 and benchVolume > benchVolume[1]  // Crypto: -1.0% (vs stock -0.2%)
 
 // Count distribution days in last 25 trading days
 var int distDayCount = 0
@@ -937,7 +937,7 @@ if benchClose < benchClose[1]
 else if isAttemptedRally
     rallyDayCount := rallyDayCount + 1
 
-bool isFollowThroughDay = rallyDayCount >= 4 and rallyDayCount <= 10 and benchChange >= 1.25 and benchVolume > benchVolume[1]
+bool isFollowThroughDay = rallyDayCount >= 4 and rallyDayCount <= 10 and benchChange >= 3.0 and benchVolume > benchVolume[1]  // Crypto: +3.0% (vs stock +1.25%)
 
 // Market Health based on distribution count
 string marketHealth = distDayCount <= 2 ? "HEALTHY" : distDayCount <= 4 ? "CAUTION" : "HIGH RISK"
