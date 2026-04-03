@@ -1403,7 +1403,8 @@ if barstate.islast and showInfoPanel
                  "└────────────────────────────\n"
 
         // Use _RT for real-time panel background (shows during the day)
-        panelBgColor := isBuyNow_RT and rsBasedQualified ? color.new(color.fuchsia, 80) : isBuyNow_RT ? color.new(color.lime, 80) : isPullbackBuyNow_RT ? color.new(color.lime, 80) : isLowCheatNow_RT ? color.new(color.lime, 80) : isReentryNow_RT ? color.new(color.lime, 80) : isAddHold ? color.new(color.aqua, 80) : isReadyToBuy ? color.new(color.green, 80) : isQualified ? color.new(color.green, 85) : isSuperStockWatch ? color.new(color.fuchsia, 85) : isWatchlist ? color.new(color.orange, 80) : color.new(color.gray, 80)
+        // ETL signals checked first (in ETL mode, ATL signals won't fire)
+        panelBgColor := isEtlBuyNow_RT ? color.new(color.lime, 80) : isEtlPullbackNow_RT ? color.new(color.lime, 80) : isEtlReentryNow_RT ? color.new(color.lime, 80) : etlBuyTriggered ? color.new(color.aqua, 80) : isBuyNow_RT and rsBasedQualified ? color.new(color.fuchsia, 80) : isBuyNow_RT ? color.new(color.lime, 80) : isPullbackBuyNow_RT ? color.new(color.lime, 80) : isLowCheatNow_RT ? color.new(color.lime, 80) : isReentryNow_RT ? color.new(color.lime, 80) : isAddHold ? color.new(color.aqua, 80) : isReadyToBuy ? color.new(color.green, 80) : isQualified ? color.new(color.green, 85) : isSuperStockWatch ? color.new(color.fuchsia, 85) : isWatchlist ? color.new(color.orange, 80) : color.new(color.gray, 80)
     
     else
         // ═══════════════════════════════════════════════════════════════════
