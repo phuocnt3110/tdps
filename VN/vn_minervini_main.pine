@@ -1252,9 +1252,9 @@ else if zoneMode == "ETL"
     barCol := isEtlPullbackNow ? color.new(color.lime, 0) : barCol
     barCol := isEtlBuyNow ? color.new(color.lime, 0) : barCol
 else
-    // BTL Mode: All buys = Lime, non-buy states keep distinct colors
-    barCol := btlWatchSignal ? color.new(color.aqua, 0) : barCol
-    barCol := btlReadySignal ? color.new(color.blue, 0) : barCol
+    // BTL Mode: Orange=watch, Yellow=ready, Lime=buy (consistent with ATL)
+    barCol := btlWatchSignal ? color.new(color.orange, 0) : barCol
+    barCol := btlReadySignal ? color.new(color.yellow, 0) : barCol
     barCol := isBtlReentryNow ? color.new(color.lime, 0) : barCol
     barCol := isBtlPullbackNow ? color.new(color.lime, 0) : barCol
     barCol := btlBuySignal ? color.new(color.lime, 0) : barCol
@@ -1268,7 +1268,7 @@ if zoneMode == "ATL"
 else if zoneMode == "ETL"
     bgCol := anyBuyNow ? color.new(color.lime, 90) : color.new(color.orange, 95)
 else
-    bgCol := anyBuyNow ? color.new(color.lime, 90) : btlReadySignal ? color.new(color.blue, 92) : btlWatchSignal ? color.new(color.aqua, 95) : na
+    bgCol := anyBuyNow ? color.new(color.lime, 90) : btlReadySignal ? color.new(color.yellow, 92) : btlWatchSignal ? color.new(color.orange, 95) : na
 bgcolor(bgCol)
 
 
@@ -1403,7 +1403,7 @@ if barstate.islast and showInfoPanel
                  "└────────────────────────────\n"
 
         // Use _RT for real-time panel background (shows during the day)
-        panelBgColor := isBuyNow_RT and rsBasedQualified ? color.new(color.fuchsia, 80) : isBuyNow_RT ? color.new(color.lime, 80) : isPullbackBuyNow_RT ? color.new(color.teal, 80) : isLowCheatNow_RT ? color.new(color.blue, 80) : isReentryNow_RT ? color.new(color.olive, 80) : isAddHold ? color.new(color.aqua, 80) : isReadyToBuy ? color.new(color.green, 80) : isQualified ? color.new(color.teal, 80) : isSuperStockWatch ? color.new(color.fuchsia, 85) : isWatchlist ? color.new(color.orange, 80) : color.new(color.gray, 80)
+        panelBgColor := isBuyNow_RT and rsBasedQualified ? color.new(color.fuchsia, 80) : isBuyNow_RT ? color.new(color.lime, 80) : isPullbackBuyNow_RT ? color.new(color.lime, 80) : isLowCheatNow_RT ? color.new(color.lime, 80) : isReentryNow_RT ? color.new(color.lime, 80) : isAddHold ? color.new(color.aqua, 80) : isReadyToBuy ? color.new(color.green, 80) : isQualified ? color.new(color.green, 85) : isSuperStockWatch ? color.new(color.fuchsia, 85) : isWatchlist ? color.new(color.orange, 80) : color.new(color.gray, 80)
     
     else
         // ═══════════════════════════════════════════════════════════════════
@@ -1508,7 +1508,7 @@ if barstate.islast and showInfoPanel
                  "└────────────────────────────\n"
 
         // Use _RT for real-time panel background
-        panelBgColor := btlBuySignal_RT ? color.new(color.lime, 80) : isBtlPullbackNow_RT ? color.new(color.teal, 80) : isBtlReentryNow_RT ? color.new(color.olive, 80) : btlInPosition ? color.new(color.green, 80) : btlReadySignal ? color.new(color.blue, 80) : btlWatchSignal ? color.new(color.aqua, 85) : wStage4 ? color.new(color.red, 85) : color.new(color.gray, 80)
+        panelBgColor := btlBuySignal_RT ? color.new(color.lime, 80) : isBtlPullbackNow_RT ? color.new(color.lime, 80) : isBtlReentryNow_RT ? color.new(color.lime, 80) : btlInPosition ? color.new(color.green, 80) : btlReadySignal ? color.new(color.yellow, 80) : btlWatchSignal ? color.new(color.orange, 85) : wStage4 ? color.new(color.red, 85) : color.new(color.gray, 80)
     
     // ═══════════════════════════════════════════════════════════════════
     // COMMON SECTIONS (Exit Signals, Market Timing, Fundamentals)

@@ -1,5 +1,5 @@
 //@version=5
-indicator("Minervini RS - US", shorttitle="RS_US", overlay=false)
+indicator("us_rsline", shorttitle="RS_US", overlay=false)
 
 //----------------------------
 // Inputs - US STOCK VERSION
